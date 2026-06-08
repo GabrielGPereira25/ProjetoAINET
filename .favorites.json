@@ -1,0 +1,50 @@
+[
+    {
+        "type": "Directory",
+        "name": "/Users/marco/Documents/Internal/AINET/Práticas/08.Laravel.5/ai-laravel-5/app/Http/Controllers",
+        "parent_id": null,
+        "workspaceRoot": "/Users/marco/Documents/Internal/AINET/Práticas/08.Laravel.5/ai-laravel-5",
+        "workspacePath": "app/Http/Controllers",
+        "id": "T4IN2iD31bk60pm7"
+    },
+    {
+        "type": "Directory",
+        "name": "/Users/marco/Documents/Internal/AINET/Práticas/08.Laravel.5/ai-laravel-5/app/Http/Requests",
+        "parent_id": null,
+        "workspaceRoot": "/Users/marco/Documents/Internal/AINET/Práticas/08.Laravel.5/ai-laravel-5",
+        "workspacePath": "app/Http/Requests",
+        "id": "Av6SjJfMKTn1D7bx"
+    },
+    {
+        "type": "Directory",
+        "name": "/Users/marco/Documents/Internal/AINET/Práticas/08.Laravel.5/ai-laravel-5/app/Models",
+        "parent_id": null,
+        "workspaceRoot": "/Users/marco/Documents/Internal/AINET/Práticas/08.Laravel.5/ai-laravel-5",
+        "workspacePath": "app/Models",
+        "id": "4q8UoSgrwYcxHFQv"
+    },
+    {
+        "type": "Directory",
+        "name": "/Users/marco/Documents/Internal/AINET/Práticas/08.Laravel.5/ai-laravel-5/resources/views",
+        "parent_id": null,
+        "workspaceRoot": "/Users/marco/Documents/Internal/AINET/Práticas/08.Laravel.5/ai-laravel-5",
+        "workspacePath": "resources/views",
+        "id": "XuGqZmTWntQJHriB"
+    },
+    {
+        "type": "Directory",
+        "name": "/Users/marco/Documents/Internal/AINET/Práticas/08.Laravel.5/ai-laravel-5/resources/views/components",
+        "parent_id": null,
+        "workspaceRoot": "/Users/marco/Documents/Internal/AINET/Práticas/08.Laravel.5/ai-laravel-5",
+        "workspacePath": "resources/views/components",
+        "id": "9j20TNBxnWqaOulf"
+    },
+    {
+        "type": "File",
+        "name": "/Users/marco/Documents/Internal/AINET/Práticas/08.Laravel.5/ai-laravel-5/routes/web.php",
+        "parent_id": null,
+        "workspaceRoot": "/Users/marco/Documents/Internal/AINET/Práticas/08.Laravel.5/ai-laravel-5",
+        "workspacePath": "routes/web.php",
+        "id": "3zBgoK5JREV8kWcp"
+    }
+]
