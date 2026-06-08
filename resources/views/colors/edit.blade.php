@@ -1,0 +1,24 @@
+<x-layouts::main-content :title="$color->name"
+                         :heading="'Edit color '. $color->name"
+                         subheading='Click on "Save" button to store the information.'>
+    <div class="flex flex-col space-y-6">
+        <div class="max-full">
+            <section>
+                <form method="POST" action="{{ route('colors.update', ['color' => $color]) }}" enctype="multipart/form-data">
+                    @csrf
+                    @method('PUT')
+                    <div class="mt-6 space-y-4">
+                        @include('colors.partials.fields', ['mode' => 'edit'])
+                    </div>
+                    @include('partials.form-buttons', ['entity' => 'color', 'value' => $color,
+                        'new' => true, 'show' => true, 'delete' => true, 'save' => true, 'cancel' => true])
+                </form>
+            </section>
+        </div>
+    </div>
+    <form id="delete-form" method="POST" action="{{ route('colors.destroy', ['color' => $color]) }}" class="hidden">
+        @csrf
+        @method('DELETE')
+    </form>
+</x-layouts::main-content>
+

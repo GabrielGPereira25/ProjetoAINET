@@ -9,13 +9,13 @@
 @endphp
 <div class="mt-6 flex flex-wrap justify-start items-center gap-4">
     @if($new)
-        <flux:button variant="primary" href="{{ route($entity . 's.create') }}">New</flux:button>
+        <flux:button variant="primary" href="{{ route(Str::plural($entity) . '.create') }}">New</flux:button>
     @endif
     @if($show)
-        <flux:button variant="filled" class="uppercase" href="{{ route($entity . 's.show', $value) }}">Show</flux:button>
+        <flux:button variant="filled" class="uppercase" href="{{ route(Str::plural($entity) . '.show', $value) }}">Show</flux:button>
     @endif
     @if($edit)
-        <flux:button variant="filled" class="uppercase" href="{{ route($entity . 's.edit', $value) }}">Edit</flux:button>
+        <flux:button variant="filled" class="uppercase" href="{{ route(Str::plural($entity) . '.edit', $value) }}">Edit</flux:button>
     @endif
     @if($delete)
         <flux:button variant="danger" type="submit" form="{{ $deleteForm }}" class="uppercase">Delete</flux:button>

@@ -28,45 +28,16 @@
                     <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
-                    <flux:sidebar.item icon="building-library" :href="route('departments.index')" :current="request()->routeIs('departments.index')" wire:navigate>
-                        Departments
-                    </flux:sidebar.item>
-                    <flux:sidebar.item icon="folder-open" :href="route('courses.index')" :current="request()->routeIs('courses.index')" wire:navigate>
-                        Courses
-                    </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 
             <flux:sidebar.nav>
-                <flux:sidebar.group heading="Academics" class="grid">
-                    <flux:sidebar.item icon="academic-cap" :href="route('courses.showcase')" :current="request()->routeIs('courses.showcase')" wire:navigate>
-                        Courses
+                <flux:sidebar.group heading="Administration" class="grid">
+                    <flux:sidebar.item icon="user-circle" :href="route('colors.index')" :current="request()->routeIs('colors.index')" wire:navigate>
+                        Colors
                     </flux:sidebar.item>
-                    <flux:sidebar.item icon="document" :href="route('disciplines.index')" :current="request()->routeIs('disciplines.index')" wire:navigate>
-                        Disciplines
-                    </flux:sidebar.item>
-                    <flux:navlist.group heading="Curricula" expandable :expanded="request()->routeIs('courses.curriculum')">
-                        @foreach($sharedCourses as $course)
-                            <flux:sidebar.item :href="route('courses.curriculum', ['course' => $course])"
-                                :current="request()->routeIs('courses.curriculum')
-                                       && request()->route('course')?->is($course)" class="font-light font-sm">
-                                {{ $course->abbreviation }}
-                            </flux:sidebar.item>
-                        @endforeach
-                    </flux:navlist.group>
-                </flux:sidebar.group>
-            </flux:sidebar.nav>
-
-            <flux:sidebar.nav>
-                <flux:sidebar.group heading="People" class="grid">
-                    <flux:sidebar.item icon="user" :href="route('teachers.index')" :current="request()->routeIs('teachers.index')" wire:navigate>
-                        Teachers
-                    </flux:sidebar.item>
-                    <flux:sidebar.item icon="users" :href="route('students.index')" :current="request()->routeIs('students.index')" wire:navigate>
-                        Students
-                    </flux:sidebar.item>
-                    <flux:sidebar.item icon="user-circle" :href="route('administratives.index')" :current="request()->routeIs('administratives.index')" wire:navigate>
-                        Administratives
+                    <flux:sidebar.item icon="user-circle" :href="route('categories.index')" :current="request()->routeIs('categories.index')" wire:navigate>
+                        Category
                     </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
@@ -109,21 +80,6 @@
                             </div>
                         </div>
                     </flux:menu.radio.group>
-
-                    <flux:menu.separator />
-
-                    <flux:menu.radio.group>
-                        <flux:menu.item icon="document" :href="route('home')" :current="false" wire:navigate>
-                            My Disciplines
-                        </flux:menu.item>
-                        <flux:menu.item icon="user" :href="route('home')" :current="false" wire:navigate>
-                            My Teachers
-                        </flux:menu.item>
-                        <flux:menu.item icon="users" :href="route('home')" :current="false" wire:navigate>
-                            My Students
-                        </flux:menu.item>
-                    </flux:menu.radio.group>
-
 
                     <flux:menu.separator />
 

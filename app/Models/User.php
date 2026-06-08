@@ -12,14 +12,15 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'email', 'password', 'admin', 'type', 'gender', 'photo_url'])]
+#[Fillable(['name', 'email', 'password', 'admin', 'user_type', 'gender', 'photo_url', 'blocked', 'custom'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, TwoFactorAuthenticatable;
+    use HasFactory, Notifiable, TwoFactorAuthenticatable, SoftDeletes;
 
     /**
      * Get the attributes that should be cast.
@@ -55,13 +56,8 @@ class User extends Authenticatable implements MustVerifyEmail
         }
     }
 
-    public function teacher(): HasOne
+    public function customer() : HasOne
     {
-        return $this->hasOne(Teacher::class);
-    }
-
-    public function student(): HasOne
-    {
-        return $this->hasOne(Student::class);
+        return $this->hasOne(Customer::class, 'id', 'id')->withTrashed();
     }
 }

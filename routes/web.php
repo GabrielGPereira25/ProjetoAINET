@@ -1,45 +1,23 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\CourseController;
-use App\Http\Controllers\DisciplineController;
-use App\Http\Controllers\DepartmentController;
-use App\Http\Controllers\AdministrativeController;
-use App\Http\Controllers\StudentController;
-use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ColorController;
+use App\Http\Controllers\PriceController;
+use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'home')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
+    Route::middleware('can:admin')->group(function () {
+        Route::resource('categories', CategoryController::class);
+        Route::resource('colors', ColorController::class);
+        Route::delete('categories/{category}/image', [CategoryController::class, 'destroyImage'])->name('categories.image.destroy');
+        Route::get('prices', [PriceController::class, 'edit'])->name('prices.edit');
+        Route::put('prices', [PriceController::class, 'update'])->name('prices.update');
+    });
 });
-
-Route::get('courses/showcase',
-    [CourseController::class, 'showCase'])->name('courses.showcase');
-
-Route::get('courses/{course}/curriculum',
-    [CourseController::class, 'showCurriculum'])->name('courses.curriculum');
-
-Route::delete('courses/{course}/image', [CourseController::class, 'destroyImage'])
-    ->name('courses.image.destroy');
-Route::resource('courses', CourseController::class);
-
-Route::resource('disciplines', DisciplineController::class);
-
-Route::resource('departments', DepartmentController::class);
-
-Route::delete('teachers/{teacher}/photo', [TeacherController::class, 'destroyPhoto'])
-    ->name('teachers.photo.destroy');
-Route::resource('teachers', TeacherController::class);
-
-Route::delete('students/{student}/photo', [StudentController::class, 'destroyPhoto'])
-    ->name('students.photo.destroy');
-Route::resource('students', StudentController::class);
-
-Route::delete('administratives/{administrative}/photo', [AdministrativeController::class, 'destroyPhoto'])
-    ->name('administratives.photo.destroy');
-Route::resource('administratives', AdministrativeController::class);
 
 // CART Related Routes
 // Show the cart:
@@ -58,4 +36,6 @@ Route::post('cart', [CartController::class, 'confirm'])->name('cart.confirm');
 // Clear the cart:
 Route::delete('cart', [CartController::class, 'destroy'])->name('cart.destroy');
 
-require __DIR__.'/settings.php';
+
+
+require __DIR__ . '/settings.php';
