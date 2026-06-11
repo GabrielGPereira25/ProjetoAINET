@@ -2,76 +2,83 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
-use App\Models\Discipline;
-use App\Models\Student;
 use App\Http\Requests\CartConfirmationFormRequest;
+use App\Models\Color;
+use App\Models\Price;
+use App\Models\Tshirt_image;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 
 class CartController extends Controller
 {
+    public static function calculateUnitPrice(Tshirt_image $tshirt_image,$qty): float
+    {
+        $price=Price::first();
+        if ($price->qty_discount <= $qty) {
+            if ($tshirt_image->customer) {
+                return $price->unit_price_own_discount;
+            }
+            return $price->unit_price_catalog_discount;
+        }
+        if ($tshirt_image->customer) {
+            return $price->unit_price_own;
+        }
+        return $price->unit_price_catalog;
+    }
     public function show(): View
     {
-        $cartOnSession = session('cart', []);
-        $cart = Discipline::hydrate($cartOnSession);
-        return view('cart.show', compact('cart'));
+        $cart = session('cart', []);
+        $colors=Color::all();
+        $total_items = array_sum(array_column($cart, 'qty'));
+        $total_price = array_sum(array_column($cart, 'sub_total'));
+
+        return view('cart.show', compact('cart', 'colors', 'total_items', 'total_price'));
     }
 
-    public function addToCart(Request $request, Discipline $discipline): RedirectResponse
+    public function addToCart(Request $request, Tshirt_image $tshirt_image): RedirectResponse
     {
-        $cartOnSession = session('cart', []);
-        $cart = Discipline::hydrate($cartOnSession);
-        if ($cart->firstWhere('id', $discipline->id)) {
-            $alertType = 'warning';
-            $url = route('disciplines.show', ['discipline' => $discipline]);
-            $htmlMessage = "Discipline <a href='$url'>#{$discipline->id}
-                <strong>\"{$discipline->name}\"</strong></a> was not added to the cart
-                because it is already included in the cart!";
-            return back()
-                ->with('alert-msg', $htmlMessage)
-                ->with('alert-type', $alertType);
+        $cart = session('cart', []);
+        $id=$tshirt_image->id . '_' . $request->size . '_' . $request->color;
+
+
+        if (array_key_exists($id, $cart)) {
+            $cart[$id]['qty'] += $request->qty;
         } else {
-            $cart->push($discipline);
+            $cart[$id] = [
+                'tshirt_image_id' => $tshirt_image->id,
+                'tshirt_image_url' => $tshirt_image->imageFullUrl,
+                'tshirt_image_name' => $tshirt_image->name,
+                'unit_price' => 0,
+                'sub_total' => 0,
+                'size' => $request->size,
+                'color' => $request->color,
+                'qty' => $request->qty
+            ];
         }
-        $request->session()->put('cart', $cart->toArray());
-        $alertType = 'success';
-        $url = route('disciplines.show', ['discipline' => $discipline]);
-        $htmlMessage = "Discipline <a href='$url'>#{$discipline->id}
-                <strong>\"{$discipline->name}\"</strong></a> was added to the cart.";
+        $cart[$id]['unit_price'] = self::calculateUnitPrice($tshirt_image, $cart[$id]['qty']);
+        $cart[$id]['sub_total'] = $cart[$id]['unit_price'] * $cart[$id]['qty'];
+        session(['cart' => $cart]);
+
         return back()
-            ->with('alert-msg', $htmlMessage)
-            ->with('alert-type', $alertType);
+            ->with('alert-msg', 'Item added to cart successfully!')
+            ->with('alert-type', 'success');
     }
 
-    public function removeFromCart(Request $request, Discipline $discipline): RedirectResponse
+    public function removeFromCart(Request $request, $id): RedirectResponse
     {
-        $url = route('disciplines.show', ['discipline' => $discipline]);
-        $cartOnSession = session('cart', []);
-        $cart = Discipline::hydrate($cartOnSession);
-        $element = $cart->firstWhere('id', $discipline->id);
-        if ($element) {
-            $cart->forget($cart->search($element));
-            if ($cart->count() == 0) {
-                $request->session()->forget('cart');
-            } else {
-                $request->session()->put('cart', $cart->toArray());
-            }
-            $alertType = 'success';
-            $htmlMessage = "Discipline <a href='$url'>#{$discipline->id}
-            <strong>\"{$discipline->name}\"</strong></a> was removed from the cart.";
+        $cart = session('cart', []);
+        if (array_key_exists($id, $cart)) {
+            unset($cart[$id]);
+            session(['cart' => $cart]);
             return back()
-                ->with('alert-msg', $htmlMessage)
-                ->with('alert-type', $alertType);
+                ->with('alert-msg', 'Item removed from cart successfully!')
+                ->with('alert-type', 'success');
         } else {
-            $alertType = 'warning';
-            $htmlMessage = "Discipline <a href='$url'>#{$discipline->id}
-            <strong>\"{$discipline->name}\"</strong></a> was not removed from the cart
-            because cart does not include it!";
             return back()
-                ->with('alert-msg', $htmlMessage)
-                ->with('alert-type', $alertType);
+                ->with('alert-msg', 'Item not found in cart!')
+                ->with('alert-type', 'danger');
         }
     }
 
@@ -85,66 +92,141 @@ class CartController extends Controller
 
     public function confirm(CartConfirmationFormRequest $request): RedirectResponse
     {
-        $cartOnSession = session('cart', []);
-        $cart = Discipline::hydrate($cartOnSession);
-        if (!$cart || ($cart->count() == 0)) {
+        $cart = session('cart', []);
+        if (empty($cart)) {
             return back()
                 ->with('alert-type', 'danger')
-                ->with('alert-msg', "Cart was not confirmed, because cart is empty!");
-        } else {
-            $student = Student::where('number', $request->validated()['student_number'])->first();
-            if (!$student) {
-                return back()
-                    ->with('alert-type', 'danger')
-                    ->with('alert-msg', "Student number does not exist on the database!");
+                ->with('alert-msg', 'Your cart is empty!');
+        }
+        DB::beginTransaction();
+        try {
+            $order = Order::create([
+                'date' => now(),
+                'nif' => $request->nif,
+                'address' => $request->address,
+                'payment_type' => $request->payment_type,
+                'payment_ref' => $request->payment_ref,
+                'total_price' => array_sum(array_column($cart, 'sub_total')),
+                'notes' => $request->notes,
+
+                'status' => 'pending',
+            ]);
+
+            foreach ($cart as $item) {
+                $order->order_items()->create([
+                    'tshirt_image_id' => $item['tshirt_image_id'],
+                    'color_code' => $item['color'],
+                    'size' => $item['size'],
+                    'qty' => $item['qty'],
+                    'unit_price' => $item['unit_price'],
+                    'sub_total' => $item['sub_total']
+                ]);
             }
-            $insertDisciplines = [];
-            $disciplinesOfStudent = $student->disciplines;
-            $ignored = 0;
-            foreach ($cart as $discipline) {
-                $exist = $disciplinesOfStudent->where('id', $discipline->id)->count();
-                if ($exist) {
-                    $ignored++;
-                } else {
-                    $insertDisciplines[$discipline->id] = [
-                        "discipline_id" => $discipline->id,
-                        "repeating" => 0,
-                        "grade" => null,
-                    ];
-                }
-            }
-            $ignoredStr = match ($ignored) {
-                0 => "",
-                1 => "<br>(1 discipline was ignored because student was already enrolled in it)",
-                default => "<br>($ignored disciplines were ignored because student was already
-                            enrolled on them)"
-            };
-            $totalInserted = count($insertDisciplines);
-            $totalInsertedStr = match ($totalInserted) {
-                0 => "",
-                1 => "1 discipline registration was added to the student",
-                default => "$totalInserted disciplines registrations were added to the student",
-            };
-            if ($totalInserted == 0) {
-                $request->session()->forget('cart');
-                return back()
-                    ->with('alert-type', 'danger')
-                    ->with('alert-msg', "No registration was added to the student!$ignoredStr");
+
+            DB::commit();
+            session()->forget('cart');
+            return redirect()->route('orders.show', $order)
+                ->with('alert-type', 'success')
+                ->with('alert-msg', 'Order placed successfully!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()
+                ->with('alert-type', 'danger')
+                ->with('alert-msg', 'An error occurred while placing your order. Please try again.');
+        }
+    }
+    public function updateQty(Request $request, $id): RedirectResponse
+    {
+        $request->validate([
+            'qty' => 'required|integer|min:1',
+        ]);
+        $cart = session('cart', []);
+        if (array_key_exists($id, $cart)) {
+            $cart[$id]['qty'] = $request->qty;
+            $cart[$id]['unit_price'] = self::calculateUnitPrice(Tshirt_image::find($cart[$id]['tshirt_image_id']), $cart[$id]['qty']);
+            $cart[$id]['sub_total'] = $cart[$id]['unit_price'] * $cart[$id]['qty'];
+            session(['cart' => $cart]);
+            return back()
+                ->with('alert-type', 'success')
+                ->with('alert-msg', "Quantity updated successfully!");
+        }
+    }
+
+    public function updateSize(Request $request, $id): RedirectResponse
+    {
+        $request->validate([
+            'size' => 'required|in:XS,S,M,L,XL',
+        ]);
+        $newId = $cart[$id]['tshirt_image_id'] . '_' . $request->size . '_' . $cart[$id]['color'];
+        if ($id === $newId) {
+            return back()
+                ->with('alert-type', 'success')
+                ->with('alert-msg', "The size is the same!");
+        }
+        $cart = session('cart', []);
+        if (array_key_exists($id, $cart)) {
+            if (array_key_exists($newId, $cart)) {
+                $cart[$newId]['qty'] += $cart[$id]['qty'];
+                unset($cart[$id]);
             } else {
-                DB::transaction(function () use ($student, $insertDisciplines) {
-                    $student->disciplines()->attach($insertDisciplines);
-                });
-                $request->session()->forget('cart');
-                if ($ignored == 0) {
-                    return redirect()->route('students.show', ['student' => $student])
-                        ->with('alert-type', 'success')
-                        ->with('alert-msg', "$totalInsertedStr.");
-                } else {
-                    return redirect()->route('students.show', ['student' => $student])
-                        ->with('alert-type', 'warning')
-                        ->with('alert-msg', "$totalInsertedStr. $ignoredStr");
-                }
+                $cart[$newId] = [
+                    'tshirt_image_id' => $cart[$id]['tshirt_image_id'],
+                    'tshirt_image_url' => $cart[$id]['tshirt_image_url'],
+                    'tshirt_image_name' => $cart[$id]['tshirt_image_name'],
+                    'size' => $request->$size,
+                    'color' => $cart[$id]['color'],
+                    'qty' => $cart[$id]['qty'],
+                    'unit_price' => $cart[$id]['unit_price'],
+                    'sub_total' => $cart[$id]['sub_total'],
+                ];
+                unset($cart[$id]);
             }
+            $cart[$newId]['unit_price'] = self::calculateUnitPrice(Tshirt_image::find($cart[$newId]['tshirt_image_id']), $cart[$newId]['qty']);
+            $cart[$newId]['sub_total'] = $cart[$newId]['unit_price'] * $cart[$newId]['qty'];
+
+            session(['cart' => $cart]);
+            return back()
+                ->with('alert-type', 'success')
+                ->with('alert-msg', "Size updated successfully!");
+        }
+    }
+
+    public function updateColor(Request $request, $id): RedirectResponse
+    {
+        $request->validate([
+            'color' => 'required|exists:colors,code',
+        ]);
+        $newId = $cart[$id]['tshirt_image_id'] . '_' . $cart[$id]['size'] . '_' . $request->color;
+        if ($id === $newId) {
+            return back()
+                ->with('alert-type', 'success')
+                ->with('alert-msg', "The color is the same!");
+        }
+        $cart = session('cart', []);
+        if (array_key_exists($id, $cart)) {
+            if (array_key_exists($newId, $cart)) {
+                $cart[$newId]['qty'] += $cart[$id]['qty'];
+                unset($cart[$id]);
+            } else {
+                $cart[$newId] = [
+                    'tshirt_image_id' => $cart[$id]['tshirt_image_id'],
+                    'tshirt_image_url' => $cart[$id]['tshirt_image_url'],
+                    'tshirt_image_name' => $cart[$id]['tshirt_image_name'],
+                    'size' => $cart[$id]['size'],
+                    'color' => $request->$color,
+                    'qty' => $cart[$id]['qty'],
+                    'unit_price' => $cart[$id]['unit_price'],
+                    'sub_total' => $cart[$id]['sub_total'],
+                ];
+                unset($cart[$id]);
+            }
+            $cart[$newId]['unit_price'] = self::calculateUnitPrice(Tshirt_image::find($cart[$newId]['tshirt_image_id']), $cart[$newId]['qty']);
+            $cart[$newId]['sub_total'] = $cart[$newId]['unit_price'] * $cart[$newId]['qty'];
+
+            session(['cart' => $cart]);
+            return back()
+                ->with('alert-type', 'success')
+                ->with('alert-msg', "Size updated successfully!");
         }
     }
 }
