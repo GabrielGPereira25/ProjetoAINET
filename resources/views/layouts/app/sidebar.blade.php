@@ -30,7 +30,7 @@
                     </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
-
+            @can('admin')
             <flux:sidebar.nav>
                 <flux:sidebar.group heading="Administration" class="grid">
                     <flux:sidebar.item icon="user-circle" :href="route('colors.index')" :current="request()->routeIs('colors.index')" wire:navigate>
@@ -39,8 +39,12 @@
                     <flux:sidebar.item icon="user-circle" :href="route('categories.index')" :current="request()->routeIs('categories.index')" wire:navigate>
                         Category
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="user-circle" :href="route('orders.index')" :current="request()->routeIs('orders.index')" wire:navigate>
+                        Orders
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
+            @endcan
 
             <flux:spacer />
 
