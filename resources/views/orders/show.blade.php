@@ -1,4 +1,4 @@
-<x-layouts::main-content :title="$order->name" :heading="'Category ' . $order->name">
+<x-layouts::main-content title="order" :heading="'Order ' . $order->id">
     <div class="flex flex-col space-y-6">
         <div class="max-full">
             <section>

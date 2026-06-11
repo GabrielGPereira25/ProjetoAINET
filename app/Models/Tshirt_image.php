@@ -38,4 +38,16 @@ class Tshirt_image extends Model
             return response()->file(Storage::disk('local')->exists("tshirt_images_private/{$this->image_url}"));
         }
     }
+
+    public function getImageEncode64Attribute()
+    {
+        if(Storage::disk('public')->exists("tshirt_images/" . $this->image_url)){
+            $path = asset("storage/tshirt_images/" . $this->image_url);
+        } else {
+            $path = storage_path('app/private/tshirt_images_private/' . $this->image_url);
+        }
+        $type = pathinfo($path, PATHINFO_EXTENSION);
+        $data = file_get_contents($path);
+        return 'data:image/' . $type . ';base64,' . base64_encode($data);
+    }
 }

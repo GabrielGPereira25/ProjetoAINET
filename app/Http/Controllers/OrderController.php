@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -45,5 +46,35 @@ class OrderController extends Controller
     public function show(Order $order): View
     {
         return view('orders.show', compact('order'));
+    }
+
+    public function cancel(Request $request, Order $order)
+    {
+        if($order->status === 'pending'){
+
+            $order->status = 'cancelled';
+            $order->reason_for_cancelation = $request->reason;
+            $order->save();
+
+            return back()->with('alert-msg', 'Order Canceled Successfully')->with('alert-type', 'success');
+        } else {
+            return back()->with('alert-type', 'error')->with('alert-msg', 'Only pending orders can be cancelled.');
+        }
+    }
+
+    public function updateStatus(Request $request, Order $order){
+        if($order->status === 'pending'){
+            if($request->status === 'closed'){
+                $order->status = 'closed';
+                $pdf = Pdf::loadView('orders.order-to-pdf', ['order' => $order]);
+                $pdf->save(storage_path('app/private/pdf_receipts/receipt_' . $order->id . '.pdf'));
+                $order->save();
+                return back()->with('alert-msg', 'Order Completed Successfully')->with('alert-type', 'success');
+            } else {
+                return view('orders.cancel', compact('order'));
+            }
+        } else {
+            return back()->with('alert-type', 'error')->with('alert-msg', 'Only pending orders can be completed.');
+        }
     }
 }

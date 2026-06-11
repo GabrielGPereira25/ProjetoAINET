@@ -59,15 +59,15 @@
                                 @csrf
                                 <flux:input name="nif" label="NIF"
                                     value="{{ old('nif', auth()->user()?->customer?->nif) }}" />
-                                <flux:select name="payment_method" label="Payment Method">
+                                <flux:select name="payment_type" label="Payment Method">
                                     <option value="PayPal"
-                                        {{ old('payment_method', auth()->user()?->customer?->default_payment_method) === 'PayPal' ? 'selected' : '' }}>
+                                        {{ old('payment_type', auth()->user()?->customer?->default_payment_type) === 'PayPal' ? 'selected' : '' }}>
                                         PayPal</option>
                                     <option value="Visa"
-                                        {{ old('payment_method', auth()->user()?->customer?->default_payment_method) === 'Visa' ? 'selected' : '' }}>
+                                        {{ old('payment_type', auth()->user()?->customer?->default_payment_type) === 'Visa' ? 'selected' : '' }}>
                                         Visa</option>
                                     <option value="MB WAY"
-                                        {{ old('payment_method', auth()->user()?->customer?->default_payment_method) === 'MB WAY' ? 'selected' : '' }}>
+                                        {{ old('payment_type', auth()->user()?->customer?->default_payment_type) === 'MB WAY' ? 'selected' : '' }}>
                                         MB WAY</option>
                                 </flux:select>
                                 <flux:input name="payment_ref" label="Payment Reference"

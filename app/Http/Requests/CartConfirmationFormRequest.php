@@ -23,15 +23,15 @@ class CartConfirmationFormRequest extends FormRequest
     {
         $rules = [
             'nif' => 'required|digits:9',
-            'payment_method' => 'required|in:PayPal,Visa,MB WAY',
+            'payment_type' => 'required|in:PayPal,Visa,MB WAY',
             'address' => 'required|string|max:255',
             'notes' => 'nullable|string|max:1000',
         ];
-        if ($this->payment_method === 'MB WAY') {
+        if ($this->payment_type === 'MB WAY') {
             $rules['payment_ref'] = 'required|digits:9';
-        }elseif ($this->payment_method === 'Visa') {
+        }elseif ($this->payment_type === 'Visa') {
             $rules['payment_ref'] = 'required|digits:16';
-        }elseif ($this->payment_method === 'PayPal') {
+        }elseif ($this->payment_type === 'PayPal') {
             $rules['payment_ref'] = 'required|email';
         }
         return $rules;

@@ -15,7 +15,7 @@
                 <div class="relative inline-flex items-center mr-4">
                     <div class="-top-0.5 absolute left-6 z-10">
                         <p class="flex p-3 h-3 w-3 items-center justify-center rounded-full bg-red-500 text-xs text-white">
-                            {{ count(session('cart', [])) }}
+                            {{ array_sum(array_column(session('cart', []), 'qty')) }}
                         </p>
                     </div>
                     <flux:navlist.item icon="shopping-cart" icon:variant="solid"  :href="route('cart.show')" :current="request()->routeIs('cart.show')" wire:navigate><span class="pl-2">Shopping Cart</span></flux:navlist.item>

@@ -18,7 +18,27 @@
                     <td class="px-2 py-2 text-left">{{ $order->nif }}</td>
                     <td class="px-2 py-2 text-left">{{ $order->customer->user->name }}</td>
                     <td class="px-2 py-2 text-left">{{ $order->date }}</td>
-                    <td class="px-2 py-2 text-left">{{ $order->status }}</td>
+
+                        <td class="px-2 py-2 text-left">
+
+                            @if ($order->status != 'pending' && auth()->user()->user_type === 'customer')
+
+                                    {{ $order->status }}
+                            @else
+                                <form action="{{ route('orders.updateStatus', $order) }}" method="POST">
+                                    @csrf
+                                    @method('PATCH')
+
+                                    <flux:select name="status" label="" onchange="this.form.submit()">
+                                        <option value="pending" {{ $order->status === 'pending' ? 'selected' : '' }}>Pending</option>
+                                        <option value="closed" {{ $order->status === 'closed' ? 'selected' : '' }}>Closed</option>
+                                        @can('admin')
+                                        <option value="cancelled" {{ $order->status === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                                        @endcan
+                                    </flux:select>
+                                </form>
+                            @endif
+                        </td>
                     <td class="px-2 py-2 text-left">{{ $order->total_price }}</td>
                     @if ($showView)
                         <td class="ps-2 px-0.5">

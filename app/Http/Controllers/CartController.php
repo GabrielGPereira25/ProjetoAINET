@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CartConfirmationFormRequest;
 use App\Models\Color;
+use App\Models\Order;
 use App\Models\Price;
 use App\Models\Tshirt_image;
 use Illuminate\Http\RedirectResponse;
@@ -13,9 +14,9 @@ use Illuminate\View\View;
 
 class CartController extends Controller
 {
-    public static function calculateUnitPrice(Tshirt_image $tshirt_image,$qty): float
+    public static function calculateUnitPrice(Tshirt_image $tshirt_image, $qty): float
     {
-        $price=Price::first();
+        $price = Price::first();
         if ($price->qty_discount <= $qty) {
             if ($tshirt_image->customer) {
                 return $price->unit_price_own_discount;
@@ -30,7 +31,7 @@ class CartController extends Controller
     public function show(): View
     {
         $cart = session('cart', []);
-        $colors=Color::all();
+        $colors = Color::all();
         $total_items = array_sum(array_column($cart, 'qty'));
         $total_price = array_sum(array_column($cart, 'sub_total'));
 
@@ -40,7 +41,7 @@ class CartController extends Controller
     public function addToCart(Request $request, Tshirt_image $tshirt_image): RedirectResponse
     {
         $cart = session('cart', []);
-        $id=$tshirt_image->id . '_' . $request->size . '_' . $request->color;
+        $id = $tshirt_image->id . '_' . $request->size . '_' . $request->color;
 
 
         if (array_key_exists($id, $cart)) {
@@ -108,7 +109,7 @@ class CartController extends Controller
                 'payment_ref' => $request->payment_ref,
                 'total_price' => array_sum(array_column($cart, 'sub_total')),
                 'notes' => $request->notes,
-
+                'customer_id' => auth()->id(),
                 'status' => 'pending',
             ]);
 
@@ -149,6 +150,10 @@ class CartController extends Controller
             return back()
                 ->with('alert-type', 'success')
                 ->with('alert-msg', "Quantity updated successfully!");
+        }else {
+            return back()
+                ->with('alert-type', 'danger')
+                ->with('alert-msg', "Item not found in cart!");
         }
     }
 
@@ -157,13 +162,13 @@ class CartController extends Controller
         $request->validate([
             'size' => 'required|in:XS,S,M,L,XL',
         ]);
+        $cart = session('cart', []);
         $newId = $cart[$id]['tshirt_image_id'] . '_' . $request->size . '_' . $cart[$id]['color'];
         if ($id === $newId) {
             return back()
                 ->with('alert-type', 'success')
                 ->with('alert-msg', "The size is the same!");
         }
-        $cart = session('cart', []);
         if (array_key_exists($id, $cart)) {
             if (array_key_exists($newId, $cart)) {
                 $cart[$newId]['qty'] += $cart[$id]['qty'];
@@ -173,7 +178,7 @@ class CartController extends Controller
                     'tshirt_image_id' => $cart[$id]['tshirt_image_id'],
                     'tshirt_image_url' => $cart[$id]['tshirt_image_url'],
                     'tshirt_image_name' => $cart[$id]['tshirt_image_name'],
-                    'size' => $request->$size,
+                    'size' => $request->size,
                     'color' => $cart[$id]['color'],
                     'qty' => $cart[$id]['qty'],
                     'unit_price' => $cart[$id]['unit_price'],
@@ -188,6 +193,10 @@ class CartController extends Controller
             return back()
                 ->with('alert-type', 'success')
                 ->with('alert-msg', "Size updated successfully!");
+        }else {
+            return back()
+                ->with('alert-type', 'danger')
+                ->with('alert-msg', "Item not found in cart!");
         }
     }
 
@@ -196,13 +205,13 @@ class CartController extends Controller
         $request->validate([
             'color' => 'required|exists:colors,code',
         ]);
+        $cart = session('cart', []);
         $newId = $cart[$id]['tshirt_image_id'] . '_' . $cart[$id]['size'] . '_' . $request->color;
         if ($id === $newId) {
             return back()
                 ->with('alert-type', 'success')
                 ->with('alert-msg', "The color is the same!");
         }
-        $cart = session('cart', []);
         if (array_key_exists($id, $cart)) {
             if (array_key_exists($newId, $cart)) {
                 $cart[$newId]['qty'] += $cart[$id]['qty'];
@@ -213,7 +222,7 @@ class CartController extends Controller
                     'tshirt_image_url' => $cart[$id]['tshirt_image_url'],
                     'tshirt_image_name' => $cart[$id]['tshirt_image_name'],
                     'size' => $cart[$id]['size'],
-                    'color' => $request->$color,
+                    'color' => $request->color,
                     'qty' => $cart[$id]['qty'],
                     'unit_price' => $cart[$id]['unit_price'],
                     'sub_total' => $cart[$id]['sub_total'],
@@ -227,6 +236,10 @@ class CartController extends Controller
             return back()
                 ->with('alert-type', 'success')
                 ->with('alert-msg', "Size updated successfully!");
+        }else {
+            return back()
+                ->with('alert-type', 'danger')
+                ->with('alert-msg', "Item not found in cart!");
         }
     }
 }
