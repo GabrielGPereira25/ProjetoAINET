@@ -19,7 +19,7 @@ class CategoryController extends Controller
         if ($filterByName) {
             $categoriesQuery->where('name', 'like', "%$filterByName%");
         }
-        $allcategories = $categoriesQuery->orderBy('name')->paginate(20)->withQueryString();;
+        $allcategories = $categoriesQuery->orderBy('name')->paginate(20)->withQueryString();
 
         return view('categories.index')->with('categories', $allcategories)->with('filterByName', $filterByName);
     }
