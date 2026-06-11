@@ -10,7 +10,7 @@
             <flux:input name="name" label="Name" value="{{ old('name', $category->name) }}" :disabled="$readonly" />
             <div>
                 <x-field.image name="image_file" label="Image" width="md" :readonly="$readonly" deleteTitle="Delete Image"
-                    :deleteAllow="$mode == 'edit' && $category->imageUrl" deleteForm="form_to_delete_category_image" :imageUrl="$category->imageUrl"
+                    :deleteAllow="$mode == 'edit' && $category->image_url" deleteForm="form_to_delete_category_image" :imageUrl="$category->imageFullUrl"
                     class="sm:-mt-[1.5rem] w-full sm:w-64" />
             </div>
         </div>

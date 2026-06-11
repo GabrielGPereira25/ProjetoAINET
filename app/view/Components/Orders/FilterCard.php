@@ -17,7 +17,12 @@ class FilterCard extends Component
     /**
      * Create a new component instance.
      */
-    public function __construct()
+    public function __construct(
+        public string $filterAction,
+        public string $resetUrl,
+        public ?string $date = null,
+        public ?string $status = null,
+        public ?string $nif = null)
     {
         //
     }

@@ -17,9 +17,9 @@ class Category extends Model
 {
     use SoftDeletes;
 
-     public function getImageFullUrlAttribute()
+    public function getImageFullUrlAttribute()
     {
-        if ($this->photo_url && Storage::disk('public')->exists("categories/{$this->image_url}")) {
+        if ($this->image_url && Storage::disk('public')->exists("categories/{$this->image_url}")) {
             return asset("storage/categories/{$this->image_url}");
         } else {
             return asset("storage/categories/no_category.png");

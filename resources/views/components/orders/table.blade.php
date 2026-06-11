@@ -15,7 +15,7 @@
         <tbody>
             @foreach ($orders as $order)
                 <tr class="border-b border-b-gray-400 dark:border-b-gray-500">
-                    <td class="px-2 py-2 text-left">{{ $order->customer->nif }}</td>
+                    <td class="px-2 py-2 text-left">{{ $order->nif }}</td>
                     <td class="px-2 py-2 text-left">{{ $order->customer->user->name }}</td>
                     <td class="px-2 py-2 text-left">{{ $order->date }}</td>
                     <td class="px-2 py-2 text-left">{{ $order->status }}</td>
