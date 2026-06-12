@@ -5,7 +5,9 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ColorController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PriceController;
+use App\Http\Controllers\StatisticsController;
 use App\Http\Controllers\TshirtImageController;
+use App\Models\Order;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [TshirtImageController::class, 'showTshirts'])->name('home');
@@ -19,6 +21,7 @@ Route::middleware(['auth', 'verified', 'notBlocked'])->group(function () {
         Route::delete('categories/{category}/image', [CategoryController::class, 'destroyImage'])->name('categories.image.destroy');
         Route::get('prices', [PriceController::class, 'edit'])->name('prices.edit');
         Route::put('prices', [PriceController::class, 'update'])->name('prices.update');
+        Route::get('statistics', [StatisticsController::class, 'index'])->name('statistics.index');
     });
     Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
@@ -31,8 +34,9 @@ Route::middleware(['auth', 'verified', 'notBlocked'])->group(function () {
     Route::patch('orders/{order}/updateStatus', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
 });
 
-Route::get('pdf/{order}', function(){
-    $order = \App\Models\Order::findOrFail(request('order'));
+Route::get('pdf/{order}', function () {
+    $order = Order::findOrFail(request('order'));
+
     return view('orders.order-to-pdf', compact('order'));
 })->name('orders.invoice');
 // CART Related Routes
@@ -45,9 +49,6 @@ Route::post('cart/{tshirt_image}', [CartController::class, 'addToCart'])->name('
 // Remove a t-shirt from the cart:
 Route::delete('cart/{id}', [CartController::class, 'removeFromCart'])->name('cart.remove');
 
-
-
-
 // Clear the cart:
 Route::delete('cart', [CartController::class, 'destroy'])->name('cart.destroy');
 
@@ -55,4 +56,4 @@ Route::patch('cart/{id}/size', [CartController::class, 'updateSize'])->name('car
 Route::patch('cart/{id}/color', [CartController::class, 'updateColor'])->name('cart.updateColor');
 Route::patch('cart/{id}/qty', [CartController::class, 'updateQty'])->name('cart.updateQty');
 
-require __DIR__ . '/settings.php';
+require __DIR__.'/settings.php';
