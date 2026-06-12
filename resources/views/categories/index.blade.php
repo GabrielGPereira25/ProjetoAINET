@@ -1,4 +1,4 @@
-<x-layouts::main-content :title="__('Courses')"
+<x-layouts::main-content :title="__('Category')"
                         heading="List of categories"
                         subheading="Manage the categories offered by the institution">
   <div class="flex h-full w-full flex-1 flex-col gap-4 rounded-xl ">

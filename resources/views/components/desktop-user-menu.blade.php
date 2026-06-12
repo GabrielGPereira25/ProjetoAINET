@@ -21,20 +21,6 @@
         <flux:menu.separator />
 
         <flux:menu.radio.group>
-            <flux:menu.item icon="document" :href="route('home')" :current="false" wire:navigate>
-                My Disciplines
-            </flux:menu.item>
-            <flux:menu.item icon="user" :href="route('home')" :current="false" wire:navigate>
-                My Teachers
-            </flux:menu.item>
-            <flux:menu.item icon="users" :href="route('home')" :current="false" wire:navigate>
-                My Students
-            </flux:menu.item>
-        </flux:menu.radio.group>
-
-        <flux:menu.separator />
-
-        <flux:menu.radio.group>
             <flux:menu.item :href="route('profile.edit')" icon="cog" wire:navigate>
                 {{ __('Settings') }}
             </flux:menu.item>

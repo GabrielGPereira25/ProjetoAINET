@@ -30,6 +30,12 @@
                 placeholder="email@example.com"
             />
 
+            <!-- Gender -->
+            <flux:radio.group name="gender" :label="__('Gender')" required>
+                <flux:radio value="M" :label="__('Male')" />
+                <flux:radio value="F" :label="__('Female')" />
+            </flux:radio.group>
+
             <!-- Password -->
             <flux:input
                 name="password"

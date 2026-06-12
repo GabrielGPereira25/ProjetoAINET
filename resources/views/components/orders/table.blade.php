@@ -1,5 +1,5 @@
 <div {{ $attributes }}>
-    <table class="table-auto border-collapse">
+    <table class="mt-8 table-auto border-collapse">
         <thead>
             <tr class="border-b-2 border-b-gray-400 dark:border-b-gray-500 bg-gray-100 dark:bg-gray-800">
                 <th class="px-2 py-2 text-left">NIF</th>
@@ -33,7 +33,7 @@
                                         <option value="pending" {{ $order->status === 'pending' ? 'selected' : '' }}>Pending</option>
                                         <option value="closed" {{ $order->status === 'closed' ? 'selected' : '' }}>Closed</option>
                                         @can('admin')
-                                        <option value="cancelled" {{ $order->status === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                                        <option value="canceled" {{ $order->status === 'canceled' ? 'selected' : '' }}>Canceled</option>
                                         @endcan
                                     </flux:select>
                                 </form>

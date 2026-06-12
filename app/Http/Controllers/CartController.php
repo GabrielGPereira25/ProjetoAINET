@@ -10,7 +10,9 @@ use App\Models\Tshirt_image;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
+use App\Mail\OrderPending;
 
 class CartController extends Controller
 {
@@ -125,6 +127,9 @@ class CartController extends Controller
             }
 
             DB::commit();
+
+            Mail::to(auth()->user()->email)->send(new OrderPending($order));
+
             session()->forget('cart');
             return redirect()->route('orders.show', $order)
                 ->with('alert-type', 'success')

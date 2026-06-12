@@ -14,7 +14,6 @@ Route::get('/', [TshirtImageController::class, 'showTshirts'])->name('home');
 Route::get('/tshirt/{tshirt_image}', [TshirtImageController::class, 'showTshirt'])->name('show_tshirt');
 
 Route::middleware(['auth', 'verified', 'notBlocked'])->group(function () {
-    Route::view('dashboard', 'dashboard')->name('dashboard');
     Route::middleware('can:admin')->group(function () {
         Route::resource('categories', CategoryController::class);
         Route::resource('colors', ColorController::class);

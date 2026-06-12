@@ -25,8 +25,8 @@
 
             <flux:sidebar.nav>
                 <flux:sidebar.group heading="Management" class="grid">
-                    <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                        {{ __('Dashboard') }}
+                    <flux:sidebar.item icon="home" :href="route('home')" :current="request()->routeIs('home')" wire:navigate>
+                        {{ __('Catalog') }}
                     </flux:sidebar.item>
                     @can('admin')
                     <flux:sidebar.item icon="chart-bar" :href="route('statistics.index')" :current="request()->routeIs('statistics.index')" wire:navigate>

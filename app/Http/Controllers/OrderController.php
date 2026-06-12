@@ -6,6 +6,9 @@ use App\Models\Order;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\OrderClosed;
+use App\Mail\OrderCanceled;
 
 class OrderController extends Controller
 {
@@ -52,13 +55,15 @@ class OrderController extends Controller
     {
         if($order->status === 'pending'){
 
-            $order->status = 'cancelled';
-            $order->reason_for_cancelation = $request->reason;
+            $order->status = 'canceled';
+            $order->reason_for_cancellation = $request->reason;
             $order->save();
 
-            return back()->with('alert-msg', 'Order Canceled Successfully')->with('alert-type', 'success');
+            Mail::to($order->customer->user->email)->send(new OrderCanceled($order));
+
+            return redirect()->route('orders.index')->with('alert-msg', 'Order Canceled Successfully')->with('alert-type', 'success');
         } else {
-            return back()->with('alert-type', 'error')->with('alert-msg', 'Only pending orders can be cancelled.');
+            return redirect()->route('orders.index')->with('alert-type', 'error')->with('alert-msg', 'Only pending orders can be cancelled.');
         }
     }
 
@@ -69,12 +74,15 @@ class OrderController extends Controller
                 $pdf = Pdf::loadView('orders.order-to-pdf', ['order' => $order]);
                 $pdf->save(storage_path('app/private/pdf_receipts/receipt_' . $order->id . '.pdf'));
                 $order->save();
-                return back()->with('alert-msg', 'Order Completed Successfully')->with('alert-type', 'success');
+
+                Mail::to($order->customer->user->email)->send(new OrderClosed($order));
+
+                return redirect()->route('orders.index')->with('alert-msg', 'Order Completed Successfully')->with('alert-type', 'success');
             } else {
                 return view('orders.cancel', compact('order'));
             }
         } else {
-            return back()->with('alert-type', 'error')->with('alert-msg', 'Only pending orders can be completed.');
+            return redirect()->route('orders.index')->with('alert-type', 'error')->with('alert-msg', 'Only pending orders can be completed.');
         }
     }
 }
