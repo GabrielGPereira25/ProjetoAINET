@@ -32,10 +32,10 @@ class Tshirt_image extends Model
 
     public function getImageFullUrlAttribute()
     {
-        if ($this->image_url && Storage::disk('public')->exists("tshirt_images/{$this->image_url}")) {
+        if ($this->customer_id == null) {
             return asset("storage/tshirt_images/{$this->image_url}");
         } else {
-            return response()->file(Storage::disk('local')->exists("tshirt_images_private/{$this->image_url}"));
+            return route('tshirt_images.getImage', ['tshirt_image' => $this->id]);
         }
     }
 
