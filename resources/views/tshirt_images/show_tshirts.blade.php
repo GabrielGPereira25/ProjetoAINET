@@ -12,7 +12,7 @@
                                     <div class="group relative">
                                         <a href="{{ route('show_tshirt', ['tshirt_image' => $tshirt_image]) }}">
                                             <img src="{{ $tshirt_image->imageFullUrl }}" alt="{{ $tshirt_image->name }}"
-                                                class="aspect-square w-full rounded-md bg-zinc-800 object-cover group-hover:opacity-75 lg:aspect-auto lg:h-80" />
+                                                class="aspect-square w-full rounded-md object-cover group-hover:opacity-75 lg:aspect-auto lg:h-80" />
                                         </a>
                                         <div class="mt-4 flex justify-between">
                                             <div>
@@ -24,7 +24,7 @@
                                                     </a>
                                                 </h3>
                                                 <p class="mt-1 text-sm text-zinc-400">
-                                                    {{ $tshirt_image->category->name }}</p>
+                                                    {{ $tshirt_image->category?->name ?? 'Sem categoria' }}</p>
                                             </div>
                                             <p class="text-sm font-medium text-white">
                                                 {{ $tshirt_image->customer ? $price->unit_price_own : $price->unit_price_catalog }}€

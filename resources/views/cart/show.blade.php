@@ -51,6 +51,7 @@
                         </table>
                     </div>
                     <div class="mt-12">
+                        @can('customer')
                         <div>
                             <h3 class="mb-4 text-xl">Shopping Cart Confirmation </h3>
                         </div>
@@ -83,6 +84,7 @@
                                 <flux:button variant="danger" type="submit">Clear Cart</flux:button>
                             </form>
                         </div>
+                        @endcan
                     </div>
                 </div>
             @endempty
