@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -39,6 +40,10 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::define('admin-or-customer', function ($user) {
             return in_array($user->user_type, ['A', 'C']);
+        });
+
+        Gate::define('customer-or-anonymous', function (?User $user) {
+            return $user === null || $user->user_type === 'C';
         });
     }
 

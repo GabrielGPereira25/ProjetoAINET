@@ -51,7 +51,7 @@
                         </table>
                     </div>
                     <div class="mt-12">
-                        @can('customer')
+                        @can('customer-or-anonymous')
                         <div>
                             <h3 class="mb-4 text-xl">Shopping Cart Confirmation </h3>
                         </div>
