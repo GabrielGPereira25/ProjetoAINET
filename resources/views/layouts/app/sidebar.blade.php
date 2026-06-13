@@ -24,24 +24,15 @@
             @endif
 
             <flux:sidebar.nav>
-                <flux:sidebar.group heading="Management" class="grid">
+                <flux:sidebar.group heading="Main Page" class="grid">
                     <flux:sidebar.item icon="home" :href="route('home')" :current="request()->routeIs('home')" wire:navigate>
                         {{ __('Catalog') }}
                     </flux:sidebar.item>
-                    @can('admin')
-                    <flux:sidebar.item icon="chart-bar" :href="route('statistics.index')" :current="request()->routeIs('statistics.index')" wire:navigate>
-                        {{ __('Statistics') }}
-                    </flux:sidebar.item>
-                    {{-- ADICIONADO AQUI: Botão de Users logo abaixo de Statistics --}}
-                    <flux:sidebar.item icon="users" :href="route('users.index')" :current="request()->routeIs('users.*')" wire:navigate>
-                        Users
-                    </flux:sidebar.item>
-                    @endcan
                     @can('customer')
                     <flux:sidebar.item icon="photo" :href="route('tshirt_images.index')" :current="request()->routeIs('tshirt_images.*')" wire:navigate>
                         {{ __('Custom Images') }}
                     </flux:sidebar.item>
-                    <flux:sidebar.item icon="document-text" :href="route('orders.index')" :current="request()->routeIs('orders.*')" wire:navigate>
+                    <flux:sidebar.item icon="truck" :href="route('orders.index')" :current="request()->routeIs('orders.*')" wire:navigate>
                         {{ __('My Orders') }}
                     </flux:sidebar.item>
                     @endcan
@@ -50,13 +41,22 @@
             @can('admin')
             <flux:sidebar.nav>
                 <flux:sidebar.group heading="Administration" class="grid">
-                    <flux:sidebar.item icon="user-circle" :href="route('colors.index')" :current="request()->routeIs('colors.index')" wire:navigate>
+                    <flux:sidebar.item icon="chart-bar" :href="route('statistics.index')" :current="request()->routeIs('statistics.index')" wire:navigate>
+                        {{ __('Statistics') }}
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="users" :href="route('users.index')" :current="request()->routeIs('users.*')" wire:navigate>
+                        Users
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="photo" :href="route('tshirt_images.index')" :current="request()->routeIs('tshirt_images.*')" wire:navigate>
+                        {{ __('Custom Images') }}
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="swatch" :href="route('colors.index')" :current="request()->routeIs('colors.index')" wire:navigate>
                         Colors
                     </flux:sidebar.item>
-                    <flux:sidebar.item icon="user-circle" :href="route('categories.index')" :current="request()->routeIs('categories.index')" wire:navigate>
+                    <flux:sidebar.item icon="tag" :href="route('categories.index')" :current="request()->routeIs('categories.index')" wire:navigate>
                         Category
                     </flux:sidebar.item>
-                    <flux:sidebar.item icon="user-circle" :href="route('orders.index')" :current="request()->routeIs('orders.index')" wire:navigate>
+                    <flux:sidebar.item icon="truck" :href="route('orders.index')" :current="request()->routeIs('orders.index')" wire:navigate>
                         Orders
                     </flux:sidebar.item>
                 </flux:sidebar.group>
@@ -117,7 +117,7 @@
 
                     <flux:menu.separator />
 
-                    {{-- Proteção aplicada aqui para esconder o botão aos funcionários --}}
+                    
                     @can('admin-or-customer')
                         <flux:menu.radio.group>
                             <flux:menu.item :href="route('profile.edit')" icon="cog" wire:navigate>
