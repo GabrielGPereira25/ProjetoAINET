@@ -7,7 +7,7 @@
                         <div class="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
                             <div class="flex flex-col md:flex-row md:items-end justify-between w-full gap-4 mb-8">
                                 <h2 class="text-2xl font-bold tracking-tight mb-4 md:mb-0">Choose an image</h2>
-                                
+
                                 <form method="GET" action="{{ route('home') }}" class="flex flex-col sm:flex-row items-end gap-4">
                                     <div class="w-full sm:w-48">
                                         <flux:input name="name" :label="__('Name')" type="text" placeholder="Search by name..." value="{{ $filterByName }}" />
@@ -37,7 +37,7 @@
                                     <div class="group relative">
                                         <a href="{{ route('show_tshirt', ['tshirt_image' => $tshirt_image]) }}">
                                             <img src="{{ $tshirt_image->imageFullUrl }}" alt="{{ $tshirt_image->name }}"
-                                                class="aspect-square w-full rounded-md object-cover group-hover:opacity-75 lg:aspect-auto lg:h-80" />
+                                                class="aspect-square w-full rounded-md object-contain group-hover:opacity-75 lg:aspect-auto lg:h-80" />
                                         </a>
                                         <div class="mt-4 flex justify-between">
                                             <div>
