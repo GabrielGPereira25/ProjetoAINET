@@ -1,4 +1,4 @@
-<x-layouts::main-content title="Tshirt" :heading="'Choose an image '">
+<x-layouts::main-content title="Tshirt" heading="FunShirt" subheading="Choose a color and size">
     <div class="bg-transparent">
         <div class="py-6 flex space-x-10 px-6">
 

@@ -1,4 +1,4 @@
-<x-layouts::main-content title="Catalog" :heading="'FunShirt'" subheading="Our Catalog">
+<x-layouts::main-content title="Catalog" heading="FunShirt" subheading="Our Catalog">
     <div class="flex w-full flex-1 flex-col gap-4 rounded-xl ">
         <div class="flex justify-start w-full">
             <div class="my-4 p-6 w-full">
