@@ -46,7 +46,7 @@ class CreateNewUser implements CreatesNewUsers
                 'email' => $input['email'],
                 'password' => $input['password'],
                 'user_type' => 'C',
-                'gender' => $input['gender'],
+                'gender' => empty($input['gender']) ? 'M' : $input['gender'],
             ]);
 
             $paymentRef = $input['default_payment_ref'] ?? null;
@@ -63,9 +63,9 @@ class CreateNewUser implements CreatesNewUsers
 
             Customer::create([
                 'id' => $user->id,
-                'nif' => $input['nif'] ?? null,
-                'address' => $input['address'] ?? null,
-                'default_payment_type' => $input['default_payment_type'] ?? null,
+                'nif' => empty($input['nif']) ? null : $input['nif'],
+                'address' => empty($input['address']) ? null : $input['address'],
+                'default_payment_type' => empty($input['default_payment_type']) ? null : $input['default_payment_type'],
                 'custom' => empty($custom) ? null : $custom,
             ]);
 

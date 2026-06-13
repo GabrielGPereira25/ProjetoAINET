@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -112,11 +111,7 @@
                                 <img src="{{ $item->tshirt_image->imageEncode64 }}" alt="{{ $item->tshirt_image->name }}">
                                 <br>{{ $item->tshirt_image->name }}
                             </td>
-                            <td>
-                                <span
-                                    style="display: inline-block; width: 16px; height: 16px; border-radius: 50%; border: 1px solid #d1d5db; background-color: #{{ ltrim($item->color_code, '#') }};"
-                                    title="{{ $item->color->name ?? $item->color_code }}"></span>
-                            </td>
+                            <td>{{ $item->color->name ?? $item->color_code }}</td>
                             <td>{{ $item->qty }}</td>
                             <td>{{ $item->unit_price }}€</td>
                         </tr>

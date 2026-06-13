@@ -51,10 +51,21 @@
             />
 
             <!-- Gender -->
-            <flux:radio.group name="gender" :label="__('Gender')" required>
+            <flux:radio.group name="gender" :label="__('Gender')">
                 <flux:radio value="M" :label="__('Male')" />
                 <flux:radio value="F" :label="__('Female')" />
             </flux:radio.group>
+
+            @if ($errors->any())
+                <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-zinc-800 dark:text-red-400" role="alert">
+                    <span class="font-medium">Something went wrong!</span>
+                    <ul class="mt-1.5 list-disc list-inside">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
             <hr class="my-2 border-zinc-200 dark:border-zinc-700" />
 

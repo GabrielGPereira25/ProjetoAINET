@@ -37,7 +37,7 @@ class FortifyServiceProvider extends ServiceProvider
                 {
                     return redirect(config('fortify.home'))
                         ->with('alert-type', 'info')
-                        ->with('alert-msg', 'Foi enviado um e-mail de verificação. Por favor, verifique a sua caixa de entrada.');
+                        ->with('alert-msg', 'A verification email has been sent. Please check your inbox.');
                 }
             };
         });
