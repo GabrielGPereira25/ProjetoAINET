@@ -7,20 +7,41 @@
             {{-- Simula o método PATCH exigido pelo Laravel para updates --}}
             @method('PATCH')
 
-            {{-- Fotografia de Perfil --}}
-            <div class="flex items-center gap-6">
+            {{-- Fotografia de Perfil (Com Preview em Alpine.js) --}}
+            <div x-data="{ photoPreview: null }" class="flex items-center gap-6">
                 <div class="shrink-0 relative">
+                    {{-- Preview da NOVA imagem (escondida por defeito) --}}
+                    <img x-show="photoPreview" x-bind:src="photoPreview" class="h-16 w-16 object-cover rounded-full border border-zinc-600" alt="Preview" style="display: none;">
+                    
+                    {{-- Imagem ANTIGA (mostrada se não houver preview novo) --}}
                     @if ($user->photo_url)
-                        <img class="h-16 w-16 object-cover rounded-full border border-zinc-600" src="{{ asset('storage/photos/' . $user->photo_url) }}" alt="Avatar">
+                        <img x-show="!photoPreview" class="h-16 w-16 object-cover rounded-full border border-zinc-600" src="{{ asset('storage/photos/' . $user->photo_url) }}" alt="Avatar">
                     @else
-                        <div class="flex h-16 w-16 items-center justify-center rounded-full bg-zinc-800 border border-zinc-700 text-zinc-400">
+                        {{-- Iniciais (mostradas se não houver imagem nenhuma) --}}
+                        <div x-show="!photoPreview" class="flex h-16 w-16 items-center justify-center rounded-full bg-zinc-800 border border-zinc-700 text-zinc-400">
                             {{ strtoupper(substr($user->name, 0, 1)) }}
                         </div>
                     @endif
                 </div>
+                
                 <div class="flex-1">
                     <label class="block text-sm font-medium text-zinc-300 mb-1">Fotografia de Perfil</label>
-                    <input type="file" name="image_file" accept="image/*" class="block w-full text-sm text-zinc-400 file:mr-4 file:rounded-full file:border-0 file:bg-zinc-700 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-zinc-600" />
+                    <input 
+                        type="file" 
+                        name="image_file" 
+                        accept="image/*" 
+                        x-on:change="
+                            const file = $event.target.files[0];
+                            if (file) {
+                                const reader = new FileReader();
+                                reader.onload = (e) => { photoPreview = e.target.result; };
+                                reader.readAsDataURL(file);
+                            } else {
+                                photoPreview = null;
+                            }
+                        "
+                        class="block w-full text-sm text-zinc-400 file:mr-4 file:rounded-full file:border-0 file:bg-zinc-700 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-zinc-600" 
+                    />
                     @error('image_file') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
             </div>
@@ -44,8 +65,8 @@
 
             {{-- Tipo de Utilizador --}}
             <flux:radio.group name="user_type" label="Tipo de Conta" variant="cards" class="flex-col sm:flex-row" required>
-                <flux:radio value="F" label="Funcionário"  checked="{{ old('user_type', $user->user_type) === 'F' }}" />
-                <flux:radio value="A" label="Administrador"  checked="{{ old('user_type', $user->user_type) === 'A' }}" />
+                <flux:radio value="F" label="Funcionário" description="Acesso à gestão de encomendas." checked="{{ old('user_type', $user->user_type) === 'F' }}" />
+                <flux:radio value="A" label="Administrador" description="Acesso total ao sistema." checked="{{ old('user_type', $user->user_type) === 'A' }}" />
             </flux:radio.group>
 
             {{-- Palavra-passe (Opcional) --}}
@@ -54,6 +75,7 @@
                     type="password" 
                     name="password" 
                     label="Nova Palavra-passe (Opcional)" 
+                    description="Deixe em branco se não quiser alterar."
                 />
                 
                 <flux:input 
