@@ -142,7 +142,7 @@
 
       </div>
 
-      {{-- RIGHT: T-shirts by Category --}}
+      {{-- T-shirts by Category --}}
       <div class="flex flex-col gap-6">
 
         <div class="rounded-xl border border-zinc-700 bg-zinc-800/50 p-5">
@@ -169,7 +169,7 @@
 
     </div>
 
-    {{-- ===== MONTHLY SALES (WITH YEAR FILTER) ===== --}}
+    {{-- ===== MONTHLY SALES ===== --}}
     <div class="rounded-xl border border-zinc-700 bg-zinc-800/50 p-5">
       <div class="mb-4 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
         <h3 class="text-sm font-semibold uppercase tracking-wider text-zinc-300">Monthly Sales</h3>
@@ -183,7 +183,7 @@
       </div>
 
       {{-- Bar Chart --}}
-      <div class="flex items-end gap-2" style="height: 200px;">
+      <div class="mt-4 flex h-[200px] items-end gap-2">
         @php
           $monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         @endphp
@@ -191,22 +191,24 @@
           @php
             $data = $monthlyData[$m];
             $percentage = $maxMonthlyRevenue > 0 ? ($data['revenue'] / $maxMonthlyRevenue * 100) : 0;
-            $barHeight = max($percentage, 2);
+            $barHeight = max($percentage, 2); 
           @endphp
-          <div class="group relative flex flex-1 flex-col items-center">
+          
+          <div class="group relative flex h-full flex-1 flex-col items-center justify-end">
             {{-- Tooltip --}}
-            <div class="pointer-events-none absolute -top-16 z-10 hidden rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1 text-center shadow-lg group-hover:block">
+            <div class="pointer-events-none absolute -top-12 z-10 hidden rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1 text-center shadow-lg group-hover:block">
               <p class="whitespace-nowrap text-xs font-semibold text-emerald-400">{{ number_format($data['revenue'], 2) }}€</p>
               <p class="whitespace-nowrap text-xs text-zinc-400">{{ $data['orders'] }} orders</p>
             </div>
-            {{-- Bar --}}
-            <div class="w-full rounded-t-md bg-emerald-500/80 transition-all duration-300 hover:bg-emerald-400" style="height: {{ $barHeight }}%"></div>
-            {{-- Label --}}
-            <span class="mt-1 text-xs text-zinc-500">{{ $monthNames[$m - 1] }}</span>
+            
+            <div class="flex w-full flex-1 items-end">
+              <div class="w-full rounded-t-md bg-emerald-500/80 transition-all duration-300 hover:bg-emerald-400" style="height: {{ $barHeight }}%"></div>
+            </div>
+            
+            <span class="mt-2 text-xs text-zinc-500">{{ $monthNames[$m - 1] }}</span>
           </div>
         @endfor
       </div>
-    </div>
 
     {{-- ===== BOTTOM: TOP CUSTOMERS + TOP IMAGES ===== --}}
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
