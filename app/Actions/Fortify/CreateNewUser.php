@@ -19,6 +19,12 @@ class CreateNewUser implements CreatesNewUsers
         Validator::make($input, [
             ...$this->profileRules(),
             'password' => $this->passwordRules(),
+            'nif' => ['nullable', 'string', 'regex:/^[0-9]{9}$/'],
+            'address' => ['nullable', 'string', 'max:255'],
+            'default_payment_type' => ['nullable', 'in:Visa,PayPal,MB WAY'],
+            'default_payment_ref' => ['nullable', 'string', 'max:255'],
+        ], [
+            'nif.regex' => 'O NIF deve conter exatamente 9 dígitos numéricos.',
         ])->validate();
 
         return DB::transaction(function () use ($input) {
@@ -32,6 +38,10 @@ class CreateNewUser implements CreatesNewUsers
 
             Customer::create([
                 'id' => $user->id,
+                'nif' => $input['nif'] ?? null,
+                'address' => $input['address'] ?? null,
+                'default_payment_type' => $input['default_payment_type'] ?? null,
+                'default_payment_ref' => $input['default_payment_ref'] ?? null,
             ]);
 
             return $user;

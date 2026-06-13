@@ -14,6 +14,10 @@ new #[Title('Profile settings')] class extends Component {
     public string $name = '';
     public string $email = '';
     public string $gender = '';
+    public string $nif = '';
+    public string $address = '';
+    public string $default_payment_type = '';
+    public string $default_payment_ref = '';
 
     /**
      * Mount the component.
@@ -23,6 +27,12 @@ new #[Title('Profile settings')] class extends Component {
         $this->name = Auth::user()->name;
         $this->email = Auth::user()->email;
         $this->gender = Auth::user()->gender ?? '';
+        if (Auth::user()->user_type === 'C' && Auth::user()->customer) {
+            $this->nif = Auth::user()->customer->nif ?? '';
+            $this->address = Auth::user()->customer->address ?? '';
+            $this->default_payment_type = Auth::user()->customer->default_payment_type ?? '';
+            $this->default_payment_ref = Auth::user()->customer->default_payment_ref ?? '';
+        }
     }
 
     /**
@@ -32,15 +42,36 @@ new #[Title('Profile settings')] class extends Component {
     {
         $user = Auth::user();
 
-        $validated = $this->validate($this->profileRules($user->id));
+        $validated = $this->validate([
+            ...$this->profileRules($user->id),
+            'nif' => ['nullable', 'string', 'regex:/^[0-9]{9}$/'],
+            'address' => ['nullable', 'string', 'max:255'],
+            'default_payment_type' => ['nullable', 'in:Visa,PayPal,MB WAY'],
+            'default_payment_ref' => ['nullable', 'string', 'max:255'],
+        ], [
+            'nif.regex' => 'O NIF deve conter exatamente 9 dígitos numéricos.',
+        ]);
 
-        $user->fill($validated);
+        $user->fill([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'gender' => $validated['gender'],
+        ]);
 
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;
         }
 
         $user->save();
+
+        if ($user->user_type === 'C' && $user->customer) {
+            $user->customer->update([
+                'nif' => $validated['nif'] ?? null,
+                'address' => $validated['address'] ?? null,
+                'default_payment_type' => $validated['default_payment_type'] ?? null,
+                'default_payment_ref' => $validated['default_payment_ref'] ?? null,
+            ]);
+        }
 
         Flux::toast(variant: 'success', text: __('Profile updated.'));
     }
@@ -107,6 +138,48 @@ new #[Title('Profile settings')] class extends Component {
                 <flux:radio value="M" :label="__('Male')" />
                 <flux:radio value="F" :label="__('Female')" />
             </flux:radio.group>
+
+            @if (Auth::user()->user_type === 'C')
+                <hr class="my-6 border-zinc-200 dark:border-zinc-700" />
+
+                <flux:input wire:model="nif" :label="__('NIF (Optional)')" type="text" :placeholder="__('9-digit NIF')" />
+                <flux:input wire:model="address" :label="__('Default Address (Optional)')" type="text" :placeholder="__('Your shipping address')" />
+
+                <div x-data="{ 
+                        paymentType: $wire.entangle('default_payment_type', true),
+                        useAccountEmail: $wire.default_payment_type === 'PayPal' && $wire.default_payment_ref === $wire.email
+                     }" 
+                     x-init="$watch('paymentType', val => { if(val === 'PayPal') { useAccountEmail = true; $wire.default_payment_ref = $wire.email; } else { useAccountEmail = false; } });
+                             $watch('$wire.email', val => { if(paymentType === 'PayPal' && useAccountEmail) $wire.default_payment_ref = val; });
+                             $watch('useAccountEmail', val => { if(val && paymentType === 'PayPal') $wire.default_payment_ref = $wire.email; else if (paymentType === 'PayPal') $wire.default_payment_ref = ''; });"
+                     class="flex flex-col gap-6">
+                    <flux:select wire:model="default_payment_type" :label="__('Default Payment Type (Optional)')" x-model="paymentType">
+                        <option value="">{{ __('None') }}</option>
+                        <option value="Visa">Visa</option>
+                        <option value="PayPal">PayPal</option>
+                        <option value="MB WAY">MB WAY</option>
+                    </flux:select>
+
+                    <div x-show="paymentType !== ''" x-transition x-cloak>
+                        <flux:input
+                            wire:model="default_payment_ref"
+                            :label="__('Default Payment Reference')"
+                            type="text"
+                            x-bind:placeholder="paymentType === 'Visa' ? 'Card Number (16 digits)' : (paymentType === 'PayPal' ? 'PayPal Email' : 'MB WAY Phone Number')"
+                            x-bind:readonly="paymentType === 'PayPal' && useAccountEmail"
+                            x-bind:class="paymentType === 'PayPal' && useAccountEmail ? 'opacity-60 cursor-not-allowed pointer-events-none bg-gray-100 dark:bg-zinc-800' : ''"
+                        />
+
+                        <!-- Checkbox for PayPal -->
+                        <div x-show="paymentType === 'PayPal'" class="mt-2">
+                            <flux:checkbox
+                                label="{{ __('Use my account email') }}"
+                                x-model="useAccountEmail"
+                            />
+                        </div>
+                    </div>
+                </div>
+            @endif
 
             <div class="flex items-center gap-4">
                 <flux:button variant="primary" type="submit" data-test="update-profile-button">
