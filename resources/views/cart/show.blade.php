@@ -79,11 +79,27 @@
                             </div>
                         </div>
 
-                        @can('customer-or-anonymous')
+                        @auth
+                            @can('customer')
+                                <div class="flex flex-col gap-3 w-full">
+                                    @if(auth()->user()->hasVerifiedEmail())
+                                        <flux:modal.trigger name="checkout-modal">
+                                            <flux:button variant="primary" class="w-full py-6 text-lg shadow-md hover:shadow-lg transition-shadow" icon="credit-card">Proceed to Checkout</flux:button>
+                                        </flux:modal.trigger>
+                                    @else
+                                        <flux:button variant="primary" href="{{ route('verification.notice') }}" class="w-full py-6 text-lg shadow-md hover:shadow-lg transition-shadow" icon="credit-card">Proceed to Checkout</flux:button>
+                                    @endif
+                                    
+                                    <form action="{{ route('cart.destroy') }}" method="post" onsubmit="return confirm('Are you sure you want to clear the entire cart?');" class="w-full">
+                                        @csrf
+                                        @method('DELETE')
+                                        <flux:button variant="danger" type="submit" class="w-full" icon="trash">Clear Cart</flux:button>
+                                    </form>
+                                </div>
+                            @endcan
+                        @else
                             <div class="flex flex-col gap-3 w-full">
-                                <flux:modal.trigger name="checkout-modal">
-                                    <flux:button variant="primary" class="w-full py-6 text-lg shadow-md hover:shadow-lg transition-shadow" icon="credit-card">Proceed to Checkout</flux:button>
-                                </flux:modal.trigger>
+                                <flux:button variant="primary" href="{{ route('login') }}" class="w-full py-6 text-lg shadow-md hover:shadow-lg transition-shadow" icon="credit-card">Proceed to Checkout</flux:button>
                                 
                                 <form action="{{ route('cart.destroy') }}" method="post" onsubmit="return confirm('Are you sure you want to clear the entire cart?');" class="w-full">
                                     @csrf
@@ -91,14 +107,11 @@
                                     <flux:button variant="danger" type="submit" class="w-full" icon="trash">Clear Cart</flux:button>
                                 </form>
                             </div>
-                        @else
-                            <div class="w-full">
-                                <flux:button variant="primary" disabled class="w-full py-6 text-lg">Login to Checkout</flux:button>
-                            </div>
-                        @endcan
+                        @endauth
                     </div>
 
-                    @can('customer-or-anonymous')
+                    @auth
+                    @can('customer')
                     <flux:modal name="checkout-modal" class="md:w-[600px] sm:w-full space-y-6">
                         <div class="mb-6">
                             <flux:heading size="xl" class="mb-1">Checkout Details</flux:heading>
@@ -117,7 +130,7 @@
                             <hr class="border-gray-200 dark:border-gray-700 my-6" />
                             
                             <div x-data="{ 
-                                userEmail: '{{ auth()->user()->email }}',
+                                userEmail: '{{ auth()->user()?->email ?? '' }}',
                                 savedType: '{{ auth()->user()?->customer?->default_payment_type ?? '' }}',
                                 savedVisa: '{{ auth()->user()?->customer?->custom['visa_ref'] ?? '' }}',
                                 savedMbway: '{{ auth()->user()?->customer?->custom['mbway_ref'] ?? '' }}',
@@ -247,6 +260,7 @@
                         </script>
                     @endif
                     @endcan
+                    @endauth
                 </div>
             @endempty
     </div>
