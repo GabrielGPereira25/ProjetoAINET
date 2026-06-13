@@ -21,9 +21,8 @@
 
                         <td class="px-2 py-2 text-left">
 
-                            @if ($order->status != 'pending' && auth()->user()->user_type === 'customer')
-
-                                    {{ $order->status }}
+                            @if (auth()->user()->user_type === 'C')
+                                {{ $order->status }}
                             @else
                                 <form action="{{ route('orders.updateStatus', $order) }}" method="POST">
                                     @csrf
