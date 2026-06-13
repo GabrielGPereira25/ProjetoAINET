@@ -48,7 +48,10 @@
                         Users
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="photo" :href="route('tshirt_images.index')" :current="request()->routeIs('tshirt_images.*')" wire:navigate>
-                        {{ __('Custom Images') }}
+                        {{ __('Manage Images') }}
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="currency-euro" :href="route('prices.edit')" :current="request()->routeIs('prices.*')" wire:navigate>
+                        Prices
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="swatch" :href="route('colors.index')" :current="request()->routeIs('colors.index')" wire:navigate>
                         Colors
@@ -62,17 +65,24 @@
                 </flux:sidebar.group>
             </flux:sidebar.nav>
             @endcan
+            @can('employee')
+                <flux:sidebar.group heading="Manage Orders" class="grid">
+                    <flux:sidebar.item icon="truck" :href="route('orders.index')" :current="request()->routeIs('orders.index')" wire:navigate>
+                        Orders
+                    </flux:sidebar.item>
+                </flux:sidebar.group>
+            @endcan
 
             <flux:spacer />
 
             @auth
-                <x-desktop-user-menu 
-                    class="hidden lg:block" 
-                    :name="auth()->user()->name" 
-                    :avatar="auth()->user()->photo_url ? asset('storage/photos/' . auth()->user()->photo_url) : null" 
+                <x-desktop-user-menu
+                    class="hidden lg:block"
+                    :name="auth()->user()->name"
+                    :avatar="auth()->user()->photo_url ? asset('storage/photos/' . auth()->user()->photo_url) : null"
                 />
             @else
-                
+
                 <flux:sidebar.item :href="route('login')" :current="request()->routeIs('login')" wire:navigate>
                     <div class="flex items-center gap-3">
                         <img src="{{ asset('storage/photos/anonymous.png') }}" class="h-6 w-6 rounded-full object-cover border border-zinc-300 dark:border-zinc-600" alt="Visitante">
@@ -87,8 +97,8 @@
                 <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
                 <flux:spacer />
                 <flux:dropdown position="top" align="end">
-                
-                
+
+
                 <flux:profile
                     :avatar="auth()->user()->photo_url ? asset('storage/photos/' . auth()->user()->photo_url) : null"
                     :initials="auth()->user()->initials()"
@@ -99,8 +109,8 @@
                     <flux:menu.radio.group>
                         <div class="p-0 text-sm font-normal">
                             <div class="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
-                                
-                                
+
+
                                 <flux:avatar
                                     :src="auth()->user()->photo_url ? asset('storage/photos/' . auth()->user()->photo_url) : null"
                                     :name="auth()->user()->name"
@@ -117,7 +127,7 @@
 
                     <flux:menu.separator />
 
-                    
+
                     @can('admin-or-customer')
                         <flux:menu.radio.group>
                             <flux:menu.item :href="route('profile.edit')" icon="cog" wire:navigate>
