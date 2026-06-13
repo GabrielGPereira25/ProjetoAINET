@@ -27,6 +27,8 @@ new #[Title('Profile settings')] class extends Component {
 
     public function mount(): void
     {
+        \Illuminate\Support\Facades\Gate::authorize('admin-or-customer');
+
         $this->name = Auth::user()->name;
         $this->email = Auth::user()->email;
         $this->gender = Auth::user()->gender ?? '';
