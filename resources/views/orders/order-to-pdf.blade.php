@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -90,7 +91,7 @@
             <h3 class="section-title">Order Details</h3>
             <p>Date: {{ $order->date }}</p>
             <p>Status: {{ $order->status }}</p>
-            <p>Total Price: {{ $order->total_price }}</p>
+            <p>Total Price: {{ $order->total_price }}€</p>
         </div>
 
         <div class="section-group">
@@ -99,6 +100,7 @@
                 <thead>
                     <tr>
                         <th>Product</th>
+                        <th>Color</th>
                         <th>Quantity</th>
                         <th>Price</th>
                     </tr>
@@ -109,6 +111,11 @@
                             <td class="product-cell">
                                 <img src="{{ $item->tshirt_image->imageEncode64 }}" alt="{{ $item->tshirt_image->name }}">
                                 <br>{{ $item->tshirt_image->name }}
+                            </td>
+                            <td>
+                                <span
+                                    style="display: inline-block; width: 16px; height: 16px; border-radius: 50%; border: 1px solid #d1d5db; background-color: #{{ ltrim($item->color_code, '#') }};"
+                                    title="{{ $item->color->name ?? $item->color_code }}"></span>
                             </td>
                             <td>{{ $item->qty }}</td>
                             <td>{{ $item->unit_price }}€</td>

@@ -23,7 +23,7 @@
                                             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
                                                 Size: <span class="font-semibold text-gray-700 dark:text-gray-300">{{ $item['size'] }}</span> 
                                                 <span class="mx-2">•</span> 
-                                                Color: <span class="font-semibold text-gray-700 dark:text-gray-300">{{ $item['color'] }}</span>
+                                                T-shirt Color: <span class="inline-block w-4 h-4 rounded-full border border-gray-300 dark:border-gray-600 align-middle ml-1" style="background-color: #{{ ltrim($item['color'], '#') }};" title="{{ $item['color'] }}"></span>
                                             </p>
                                             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
                                                 Unit Price: <span class="font-semibold text-gray-700 dark:text-gray-300">{{ $item['unit_price'] }}€</span>
