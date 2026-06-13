@@ -158,6 +158,39 @@ class CartController extends Controller
 
     private function createOrderFromData(array $data): RedirectResponse
     {
+        $totalPrice = array_sum(array_column($data['cart'], 'sub_total'));
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::post('https://ainet-payments-api.vercel.app/api/payments', [
+                'type' => $data['payment_type'],
+                'reference' => $data['payment_ref'],
+                'value' => round((float) $totalPrice, 2),
+            ]);
+
+            if (!$response->successful()) {
+                $errorMsg = 'Payment failed. Please check your payment details or try another method.';
+                $responseData = $response->json();
+                
+                if (isset($responseData['errors']) && is_array($responseData['errors'])) {
+                    // Extract the first error message from the errors array
+                    $firstError = collect($responseData['errors'])->flatten()->first();
+                    if ($firstError) {
+                        $errorMsg = $firstError;
+                    }
+                } elseif (isset($responseData['message'])) {
+                    $errorMsg = $responseData['message'];
+                }
+
+                return redirect()->route('cart.show')
+                    ->with('alert-type', 'danger')
+                    ->with('alert-msg', $errorMsg);
+            }
+        } catch (\Exception $e) {
+            return redirect()->route('cart.show')
+                ->with('alert-type', 'danger')
+                ->with('alert-msg', 'Payment service is currently unavailable. Please try again later.');
+        }
+
         DB::beginTransaction();
         try {
             $order = Order::create([
