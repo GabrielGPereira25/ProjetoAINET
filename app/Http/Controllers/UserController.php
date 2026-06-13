@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UserFormRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -10,7 +11,7 @@ use Illuminate\Validation\Rules\Password;
 class UserController extends Controller
 {
     use \App\Traits\UserPhotoFileStorage;
-    
+
     /**
      * Display a listing of the resource.
      */
@@ -22,7 +23,7 @@ class UserController extends Controller
         $filterByUserType = $request->query('user_type');
 
         $userQuery = User::query();
-        
+
         if ($filterByName) {
             $userQuery->where('name', 'like', "%$filterByName%");
         }
@@ -35,7 +36,7 @@ class UserController extends Controller
         if($filterByUserType){
             $userQuery->where('user_type', $filterByUserType);
         }
-        
+
         $users = $userQuery->orderBy('name')->paginate(20)->withQueryString();
         return view('users.index', compact('users', 'filterByName', 'filterByEmail', 'filterByBlocked', 'filterByUserType'));
     }
@@ -60,19 +61,15 @@ class UserController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(UserFormRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'user_type' => 'required|in:A,F',
-            'password' => ['required', 'confirmed', Password::defaults()],
-        ]);
+        $validated = $request->validated();
 
         $newUser = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'user_type' => $validated['user_type'],
+            'gender' => $validated['gender'],
             'password' => Hash::make($validated['password']),
         ]);
 
@@ -102,22 +99,18 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, User $user)
+    public function update(UserFormRequest $request, User $user)
     {
         if ($user->user_type === 'C') {
             abort(403, 'Ação não autorizada. Não é permitido editar contas de clientes.');
         }
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-            'user_type' => 'required|in:A,F',
-            'password' => ['nullable', 'confirmed', Password::defaults()],
-        ]);
+        $validated = $request->validated();
 
         $user->name = $validated['name'];
         $user->email = $validated['email'];
         $user->user_type = $validated['user_type'];
+        $user->gender = $validated['gender'];
 
         if (!empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);
@@ -169,7 +162,7 @@ class UserController extends Controller
     public function destroyPhoto(User $user)
     {
         $this->deleteUserPhoto($user);
-        
+
         return redirect()->back()
             ->with('toast', [
                 'variant' => 'success',
@@ -181,9 +174,9 @@ class UserController extends Controller
     {
         $user->blocked = !$user->blocked;
         $user->save();
-        
+
         $status = $user->blocked ? 'bloqueada' : 'desbloqueada';
-        
+
         return redirect()->route('users.index')
             ->with('toast', [
                 'variant' => 'success',
