@@ -87,7 +87,7 @@
     {{-- ===== TWO COLUMN GRID ===== --}}
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
 
-      {{-- LEFT: Users by Type + Orders by Status --}}
+      {{-- Users by Type + Orders by Status --}}
       <div class="flex flex-col gap-6">
 
         {{-- Users by Type --}}
@@ -210,7 +210,7 @@
         @endfor
       </div>
 
-    {{-- ===== BOTTOM: TOP CUSTOMERS + TOP IMAGES ===== --}}
+    {{-- BOTTOM: TOP CUSTOMERS + TOP IMAGES --}}
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
 
       {{-- Top 5 Customers --}}
