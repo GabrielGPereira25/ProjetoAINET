@@ -21,6 +21,7 @@
                     <head>
                         <tr class="border-b-2 border-b-gray-400 dark:border-b-gray-500 bg-gray-100 dark:bg-gray-800">
                             <th class="px-2 py-2 text-left">Product</th>
+                            <th class="px-2 py-2 text-left">Color</th>
                             <th class="px-2 py-2 text-left">Quantity</th>
                             <th class="px-2 py-2 text-left">Price</th>
                         </tr>
@@ -33,6 +34,7 @@
                                     <br>
                                     "{{ $item->tshirt_image->name }}"
                                 </td>
+                                <td class="px-2 py-2 text-left">{{ $item->color_code }}</td>
                                 <td class="px-2 py-2 text-left">{{ $item->qty }}</td>
                                 <td class="px-2 py-2 text-left">{{ $item->unit_price }}€</td>
                             </tr>
