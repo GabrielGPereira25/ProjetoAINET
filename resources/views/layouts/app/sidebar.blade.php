@@ -32,6 +32,10 @@
                     <flux:sidebar.item icon="chart-bar" :href="route('statistics.index')" :current="request()->routeIs('statistics.index')" wire:navigate>
                         {{ __('Statistics') }}
                     </flux:sidebar.item>
+                    {{-- ADICIONADO AQUI: Botão de Users logo abaixo de Statistics --}}
+                    <flux:sidebar.item icon="users" :href="route('users.index')" :current="request()->routeIs('users.*')" wire:navigate>
+                        Users
+                    </flux:sidebar.item>
                     @endcan
                     @can('customer')
                     <flux:sidebar.item icon="photo" :href="route('tshirt_images.index')" :current="request()->routeIs('tshirt_images.*')" wire:navigate>
