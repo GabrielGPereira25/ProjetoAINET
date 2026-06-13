@@ -73,6 +73,10 @@ class UserController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
+        if( $newUser->user_type === 'A' || $newUser->user_type === 'F' ) {
+            $newUser->markEmailAsVerified();
+        }
+
         if ($request->hasFile('image_file')) {
             $this->storeUserPhoto($request->file('image_file'), $newUser);
         }
