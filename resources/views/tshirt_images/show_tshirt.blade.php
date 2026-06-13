@@ -1,14 +1,14 @@
-<x-layouts::main-content title="Tshirt" heading="FunShirt" subheading="Choose a color and size">
+<x-layouts::main-content title="Tshirt" heading="Preview" subheading="Choose a color and size">
     <div class="bg-transparent">
         <div class="py-6 flex space-x-10 px-6">
 
 
             <!-- Image gallery -->
-            <div class="relative w-5/12 lg:w-400px shrink-0 aspect-3/4 rounded-lg overflow-hidden max-lg:hidden">
+            <div class="relative w-5/12 lg:w-400px shrink-0 aspect-square rounded-lg overflow-hidden max-lg:hidden transition-colors duration-300" id="tshirt-preview-container">
 
                 <img src="{{ asset('storage/tshirt_base/plain_white.png') }}"
                      alt="T-shirt Base"
-                     class="absolute inset-0 size-full object-contain object-top p-8" />
+                     class="absolute inset-0 size-full object-contain object-top p-8 mix-blend-multiply" />
 
                 <div class="absolute inset-0 flex items-start justify-center pt-[30%]">
                     <img src="{{ $tshirt_image->imageFullUrl }}"
@@ -28,7 +28,7 @@
                 <!-- Options -->
                 <div class="mt-4 lg:row-span-3 lg:mt-0">
                     <h2 class="sr-only">Tshirt information</h2>
-                    <p class="text-3xl tracking-tight text-white-900">{{ $tshirt_image->category->name }}</p>
+                    <p class="text-3xl tracking-tight text-white-900">{{ $tshirt_image->category?->name ?? 'Sem categoria'}}</p>
 
 
                     <form class="mt-10" action="{{ route('cart.add', ['tshirt_image' => $tshirt_image]) }}"
@@ -115,5 +115,30 @@
             </div>
         </div>
     </div>
+
+    {{-- JAVASCRIPT APENAS PARA MUDAR A COR DE FUNDO DA TSHIRT, NÂO ALTERA NADA NO SERVER-SIDE, É APENAS VISUAL --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const previewContainer = document.getElementById('tshirt-preview-container');
+            const colorRadios = document.querySelectorAll('input[name="color"]');
+
+            function updateColor(colorCode) {
+                if (previewContainer) {
+                    previewContainer.style.backgroundColor = '#' + colorCode;
+                }
+            }
+
+            const initialColor = document.querySelector('input[name="color"]:checked');
+            if (initialColor) {
+                updateColor(initialColor.value);
+            }
+
+            colorRadios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    updateColor(e.target.value);
+                });
+            });
+        });
+    </script>
 
 </x-layouts::main-content>
