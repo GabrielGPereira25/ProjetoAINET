@@ -1,32 +1,41 @@
 <x-layouts::main-content title="Tshirt" :heading="'Choose an image '">
-    <div class="bg-white">
+    <div class="bg-transparent">
         <div class="py-6 flex space-x-10 px-6">
 
 
             <!-- Image gallery -->
-            <div class="">
-                <img src="{{ $tshirt_image->imageFullUrl }}" alt="Two each of gray, white, and black shirts laying flat."
-                    class="row-span-2 aspect-3/4 size-full rounded-lg object-cover max-lg:hidden" />
+            <div class="relative w-5/12 lg:w-400px shrink-0 aspect-3/4 rounded-lg overflow-hidden max-lg:hidden">
+
+                <img src="{{ asset('storage/tshirt_base/plain_white.png') }}"
+                     alt="T-shirt Base"
+                     class="absolute inset-0 size-full object-contain object-top p-8" />
+
+                <div class="absolute inset-0 flex items-start justify-center pt-[30%]">
+                    <img src="{{ $tshirt_image->imageFullUrl }}"
+                         alt="{{ $tshirt_image->name }}"
+                         class="w-1/3 h-auto object-contain drop-shadow-sm" />
+                </div>
             </div>
+
 
             <!-- Product info -->
             <div
                 class="grow">
                 <div class="lg:col-span-2 lg:border-r lg:border-gray-200 lg:pr-8">
-                    <h1 class="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">Basic Tee 6-Pack</h1>
+                    <h1 class="text-2xl font-bold tracking-tight text-white-900 sm:text-3xl">{{ $tshirt_image->name }}</h1>
                 </div>
 
                 <!-- Options -->
                 <div class="mt-4 lg:row-span-3 lg:mt-0">
                     <h2 class="sr-only">Tshirt information</h2>
-                    <p class="text-3xl tracking-tight text-gray-900">{{ $tshirt_image->name }}</p>
+                    <p class="text-3xl tracking-tight text-white-900">{{ $tshirt_image->category->name }}</p>
 
 
                     <form class="mt-10" action="{{ route('cart.add', ['tshirt_image' => $tshirt_image]) }}"
                         method="post">
                         @csrf
                         <div>
-                            <h3 class="text-sm font-medium text-gray-900">Color</h3>
+                            <h3 class="text-sm font-medium text-white-900">Color</h3>
 
                             <fieldset aria-label="Choose a color" class="mt-4">
                                 <div class="flex flex-wrap items-center gap-x-3 ">
@@ -45,9 +54,7 @@
                         <!-- Sizes -->
                         <div class="mt-10">
                             <div class="flex items-center justify-between">
-                                <h3 class="text-sm font-medium text-gray-900">Size</h3>
-                                <a href="#" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">Size
-                                    guide</a>
+                                <h3 class="text-sm font-medium text-white-900">Size</h3>
                             </div>
 
                             <fieldset aria-label="Choose a size" class="mt-4">
@@ -93,8 +100,8 @@
                             </fieldset>
                             <fieldset aria-label="Choose qty" class="mt-4">
                                 <div>
-                                    <label class="text-black block mb-4">Quantity</label>
-                                    <input type="number" class="w-16 border-black border text-black px-2 py-1" min="1" name="qty" value="{{ old('qty', 1) }}">
+                                    <label class="text-white-900 block mb-4">Quantity</label>
+                                    <input type="number" class="w-16 border-white border text-white-900 px-2 py-1" min="1" name="qty" value="{{ old('qty', 1) }}">
                                 </div>
                             </fieldset>
                         </div>
