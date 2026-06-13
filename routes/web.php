@@ -33,12 +33,6 @@ Route::middleware(['auth', 'verified', 'notBlocked'])->group(function () {
     Route::patch('orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
     Route::patch('orders/{order}/updateStatus', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
 });
-
-Route::get('pdf/{order}', function () {
-    $order = Order::findOrFail(request('order'));
-
-    return view('orders.order-to-pdf', compact('order'));
-})->name('orders.invoice');
 // CART Related Routes
 // Show the cart:
 Route::get('cart', [CartController::class, 'show'])->name('cart.show');

@@ -22,8 +22,18 @@ class Tshirt_imageFormRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            //
+        $rules = [
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
         ];
+
+        // Se for criação (POST), a imagem é obrigatória. Se for edição (PUT/PATCH), é opcional.
+        if ($this->isMethod('post')) {
+            $rules['image_file'] = 'required|image|mimes:jpeg,png,jpg|max:4096';
+        } else {
+            $rules['image_file'] = 'nullable|image|mimes:jpeg,png,jpg|max:4096';
+        }
+
+        return $rules;
     }
 }
