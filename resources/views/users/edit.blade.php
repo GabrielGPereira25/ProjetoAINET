@@ -1,23 +1,20 @@
 <x-layouts::main-content :title="__('Editar Utilizador')" heading="Editar Conta" subheading="Altere os dados da conta de Administrador ou Funcionário.">
     
     <div class="max-w-2xl">
-        {{-- O action aponta para a rota update e passamos o $user --}}
+        
         <form method="POST" action="{{ route('users.update', $user) }}" enctype="multipart/form-data" class="flex flex-col gap-6">
             @csrf
-            {{-- Simula o método PATCH exigido pelo Laravel para updates --}}
             @method('PATCH')
 
-            {{-- Fotografia de Perfil (Com Preview em Alpine.js) --}}
             <div x-data="{ photoPreview: null }" class="flex items-center gap-6">
                 <div class="shrink-0 relative">
-                    {{-- Preview da NOVA imagem (escondida por defeito) --}}
+                    
                     <img x-show="photoPreview" x-bind:src="photoPreview" class="h-16 w-16 object-cover rounded-full border border-zinc-600" alt="Preview" style="display: none;">
                     
-                    {{-- Imagem ANTIGA (mostrada se não houver preview novo) --}}
                     @if ($user->photo_url)
                         <img x-show="!photoPreview" class="h-16 w-16 object-cover rounded-full border border-zinc-600" src="{{ asset('storage/photos/' . $user->photo_url) }}" alt="Avatar">
                     @else
-                        {{-- Iniciais (mostradas se não houver imagem nenhuma) --}}
+                    
                         <div x-show="!photoPreview" class="flex h-16 w-16 items-center justify-center rounded-full bg-zinc-800 border border-zinc-700 text-zinc-400">
                             {{ strtoupper(substr($user->name, 0, 1)) }}
                         </div>
