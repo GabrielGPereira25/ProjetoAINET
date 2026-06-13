@@ -85,4 +85,19 @@ class OrderController extends Controller
             return redirect()->route('orders.index')->with('alert-type', 'error')->with('alert-msg', 'Only pending orders can be completed.');
         }
     }
+
+    public function downloadReceipt(Order $order)
+    {
+
+        if (auth()->user()->user_type === 'C' && auth()->user()->customer->id !== $order->customer_id) {
+            abort(403, 'Não tens permissão para descarregar este recibo.');
+        }
+
+        $caminhoPdf = storage_path('app/private/pdf_receipts/receipt_' . $order->id . '.pdf');
+
+        if (!file_exists($caminhoPdf)) {
+            abort(404, 'O ficheiro PDF do recibo não foi encontrado no servidor.');
+        }
+        return response()->download($caminhoPdf);
+    }
 }

@@ -30,6 +30,7 @@ Route::middleware(['auth', 'verified', 'notBlocked'])->group(function () {
     Route::resource('tshirt_images', TshirtImageController::class);
     Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+    Route::get('orders/{order}/download-receipt', [OrderController::class, 'downloadReceipt'])->name('orders.download-receipt');
 
     Route::middleware('can:customer')->group(function () {
         Route::post('cart', [CartController::class, 'confirm'])->name('cart.confirm');
