@@ -26,6 +26,7 @@ Route::middleware(['auth', 'verified', 'notBlocked'])->group(function () {
         Route::patch('users/{user}/block', [UserController::class, 'block_unblock'])->name('users.block_unblock');
         Route::delete('users/{user}/photo', [UserController::class, 'destroyPhoto'])->name('users.photo.destroy');
     });
+    Route::get('tshirt_images/{tshirt_image}/image', [TshirtImageController::class, 'getImage'])->name('tshirt_images.getImage');
     Route::resource('tshirt_images', TshirtImageController::class);
     Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
