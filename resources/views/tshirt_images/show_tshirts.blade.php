@@ -1,4 +1,4 @@
-<x-layouts::main-content title="Catalog" heading="FunShirt" subheading="Our Catalog">
+<x-layouts::main-content title="Catalog" heading="FunShirtOnline" subheading="Our Catalog">
     <div class="flex w-full flex-1 flex-col gap-4 rounded-xl ">
         <div class="flex justify-start w-full">
             <div class="my-4 p-6 w-full">
@@ -9,6 +9,11 @@
                                 <h2 class="text-2xl font-bold tracking-tight mb-4 md:mb-0">Choose an image</h2>
 
                                 <form method="GET" action="{{ route('home') }}" class="flex flex-col sm:flex-row items-end gap-4">
+                                    @can('customer')
+                                        <div class="w-full sm:w-auto flex items-center mb-1 sm:mb-2">
+                                            <flux:checkbox name="custom_only" :label="__('My Custom T-shirts')" value="1" :checked="request('custom_only') == '1'" />
+                                        </div>
+                                    @endcan
                                     <div class="w-full sm:w-48">
                                         <flux:input name="name" :label="__('Name')" type="text" placeholder="Search by name..." value="{{ $filterByName }}" />
                                     </div>

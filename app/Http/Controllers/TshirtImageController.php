@@ -56,10 +56,10 @@ class TshirtImageController extends Controller
     public function store(Tshirt_imageFormRequest $request)
     {
         $validated = $request->validated();
-        
+
         $customer_id = null;
         $category_id = null;
-        
+
         if (auth()->user()->user_type === 'C') {
             $customer_id = auth()->id();
         } else {
@@ -81,7 +81,7 @@ class TshirtImageController extends Controller
 
         $url = route('tshirt_images.show', ['tshirt_image' => $newTshirtImage]);
         $htmlMessage = "T-shirt Image <a href='$url'><strong>{$newTshirtImage->id}</strong> - '{$newTshirtImage->name}'</a> has been created successfully!";
-        
+
         return redirect()->route('tshirt_images.index')
             ->with('alert-type', 'success')
             ->with('alert-msg', $htmlMessage);
@@ -131,7 +131,7 @@ class TshirtImageController extends Controller
 
         $url = route('tshirt_images.show', ['tshirt_image' => $tshirt_image]);
         $htmlMessage = "T-shirt Image <a href='$url'><strong>{$tshirt_image->id}</strong> - '{$tshirt_image->name}'</a> has been updated successfully!";
-        
+
         return redirect()->route('tshirt_images.index')
             ->with('alert-type', 'success')
             ->with('alert-msg', $htmlMessage);
@@ -144,13 +144,13 @@ class TshirtImageController extends Controller
 
         $id = $tshirt_image->id;
         $name = $tshirt_image->name;
-        
+
         $this->deleteTshirtImage($tshirt_image);
         $tshirt_image->delete();
 
         $alertType = 'success';
         $alertMsg = "T-shirt Image '{$name}' ({$id}) has been deleted successfully!";
-        
+
         return redirect()->route('tshirt_images.index')
             ->with('alert-type', $alertType)
             ->with('alert-msg', $alertMsg);
@@ -172,6 +172,7 @@ class TshirtImageController extends Controller
         $filterByCategory = $request->query('category_id');
         $filterByName = $request->query('name');
         $filterByDescription = $request->query('description');
+        $filterByCustom = $request->query('custom_only');
 
         $tshirt_images = Tshirt_image::query();
         if (auth()->check() && auth()->user()->user_type == 'C') {
@@ -191,6 +192,9 @@ class TshirtImageController extends Controller
         if ($filterByDescription) {
             $tshirt_images->where('description', 'like', "%$filterByDescription%");
         }
+        if ($filterByCustom) {
+            $tshirt_images->where('customer_id', auth()->user()->id);
+        }
 
         $tshirt_images = $tshirt_images->with('category')->paginate(12)->withQueryString();
 
@@ -198,7 +202,7 @@ class TshirtImageController extends Controller
         $price = Price::first();
 
         return view('tshirt_images.show_tshirts', compact(
-            'tshirt_images', 'price', 'categories', 'filterByCategory', 'filterByName', 'filterByDescription'
+            'tshirt_images', 'price', 'categories', 'filterByCategory', 'filterByName', 'filterByDescription', 'filterByCustom'
         ));
     }
 
