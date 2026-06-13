@@ -27,6 +27,7 @@ Route::middleware(['auth', 'verified', 'notBlocked'])->group(function () {
 
     Route::middleware('can:customer')->group(function () {
         Route::post('cart', [CartController::class, 'confirm'])->name('cart.confirm');
+        Route::get('cart/verify-paypal/{token}', [CartController::class, 'verifyPayPal'])->name('cart.verify-paypal');
     });
 
     Route::patch('orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');

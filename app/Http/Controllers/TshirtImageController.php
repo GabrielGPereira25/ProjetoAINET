@@ -145,8 +145,11 @@ class TshirtImageController extends Controller
         abort(404);
     }
 
-    public function showTshirts()
+    public function showTshirts(Request $request)
     {
+        $filterByCategory = $request->query('category_id');
+        $filterByName = $request->query('name');
+        $filterByDescription = $request->query('description');
 
         $tshirt_images = Tshirt_image::query();
         if (auth()->check() && auth()->user()->user_type == 'C') {
@@ -157,11 +160,24 @@ class TshirtImageController extends Controller
             $tshirt_images->whereNull('customer_id');
         }
 
+        if ($filterByCategory) {
+            $tshirt_images->where('category_id', $filterByCategory);
+        }
+        if ($filterByName) {
+            $tshirt_images->where('name', 'like', "%$filterByName%");
+        }
+        if ($filterByDescription) {
+            $tshirt_images->where('description', 'like', "%$filterByDescription%");
+        }
+
         $tshirt_images = $tshirt_images->with('category')->paginate(12)->withQueryString();
 
+        $categories = Category::all();
+        $price = Price::first();
 
-        $price=Price::first();
-        return view('tshirt_images.show_tshirts', compact('tshirt_images','price'));
+        return view('tshirt_images.show_tshirts', compact(
+            'tshirt_images', 'price', 'categories', 'filterByCategory', 'filterByName', 'filterByDescription'
+        ));
     }
 
     public function showTshirt(Tshirt_image $tshirt_image) {

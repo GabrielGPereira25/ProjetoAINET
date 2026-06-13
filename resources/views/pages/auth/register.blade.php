@@ -10,7 +10,16 @@
                 email: '{{ old('email') }}', 
                 paymentType: '{{ old('default_payment_type', '') }}', 
                 useAccountEmail: {{ old('default_payment_type') === 'PayPal' ? 'true' : 'false' }},
-                paymentRef: '{{ old('default_payment_ref', '') }}'
+                paymentRef: '{{ old('default_payment_ref', '') }}',
+                formatRef(el) {
+                    if (this.paymentType === 'MB WAY') {
+                        let val = el.value.replace(/\D/g, '');
+                        this.paymentRef = val.replace(/(\d{3})(?=\d)/g, '$1 ');
+                    } else if (this.paymentType === 'Visa') {
+                        let val = el.value.replace(/\D/g, '');
+                        this.paymentRef = val.replace(/(\d{4})(?=\d)/g, '$1 ');
+                    }
+                }
             }"
             x-init="$watch('paymentType', val => { if (val === 'PayPal') { useAccountEmail = true; paymentRef = email; } else { useAccountEmail = false; } });
                     $watch('email', val => { if (paymentType === 'PayPal' && useAccountEmail) paymentRef = val; });
@@ -83,9 +92,13 @@
                         :label="__('Default Payment Reference')"
                         type="text"
                         x-model="paymentRef"
+                        x-on:input="formatRef($event.target)"
                         x-bind:placeholder="paymentType === 'Visa' ? 'Card Number (16 digits)' : (paymentType === 'PayPal' ? 'PayPal Email' : 'MB WAY Phone Number')"
                         x-bind:readonly="paymentType === 'PayPal' && useAccountEmail"
                         x-bind:class="paymentType === 'PayPal' && useAccountEmail ? 'opacity-60 cursor-not-allowed pointer-events-none bg-gray-100 dark:bg-zinc-800' : ''"
+                        x-bind:pattern="paymentType === 'Visa' ? '^4[0-9]{3}( [0-9]{4}){3}$|^4[0-9]{15}$' : (paymentType === 'MB WAY' ? '^9[0-9]{2}( [0-9]{3}){2}$|^9[0-9]{8}$' : '.*')"
+                        x-bind:title="paymentType === 'Visa' ? 'O cartão Visa deve começar por 4 e ter 16 dígitos.' : (paymentType === 'MB WAY' ? 'O número MB WAY deve começar por 9 e ter 9 dígitos.' : '')"
+                        x-bind:type="paymentType === 'PayPal' ? 'email' : 'text'"
                     />
 
                     <!-- Checkbox for PayPal -->

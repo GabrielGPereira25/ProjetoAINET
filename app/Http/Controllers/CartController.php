@@ -11,8 +11,11 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use App\Mail\OrderPending;
+use App\Mail\VerifyPayPalEmail;
 
 class CartController extends Controller
 {
@@ -101,21 +104,75 @@ class CartController extends Controller
                 ->with('alert-type', 'danger')
                 ->with('alert-msg', 'Your cart is empty!');
         }
-        DB::beginTransaction();
-        try {
-            $order = Order::create([
-                'date' => now(),
+
+        // Se PayPal e e-mail for diferente da conta, pedimos verificação.
+        if ($request->payment_type === 'PayPal' && $request->payment_ref !== auth()->user()->email) {
+            $token = Str::random(60);
+            
+            $payload = [
                 'nif' => $request->nif,
                 'address' => $request->address,
                 'payment_type' => $request->payment_type,
                 'payment_ref' => $request->payment_ref,
-                'total_price' => array_sum(array_column($cart, 'sub_total')),
                 'notes' => $request->notes,
                 'customer_id' => auth()->id(),
+                'cart' => $cart
+            ];
+
+            Cache::put('paypal_verification_'.$token, $payload, now()->addHours(2));
+
+            $url = route('cart.verify-paypal', $token);
+            Mail::to($request->payment_ref)->send(new VerifyPayPalEmail($url));
+
+            return redirect()->route('cart.show')
+                ->with('alert-type', 'info')
+                ->with('alert-msg', 'A verification email was sent to your PayPal address. Please check your inbox to confirm the order.');
+        }
+
+        return $this->createOrderFromData([
+            'nif' => $request->nif,
+            'address' => $request->address,
+            'payment_type' => $request->payment_type,
+            'payment_ref' => $request->payment_ref,
+            'notes' => $request->notes,
+            'customer_id' => auth()->id(),
+            'cart' => $cart
+        ]);
+    }
+
+    public function verifyPayPal($token): RedirectResponse
+    {
+        $payload = Cache::get('paypal_verification_'.$token);
+
+        if (!$payload) {
+            return redirect()->route('cart.show')
+                ->with('alert-type', 'danger')
+                ->with('alert-msg', 'The verification link is invalid or has expired.');
+        }
+
+        // Verificou com sucesso. Removemos da cache e criamos a encomenda.
+        Cache::forget('paypal_verification_'.$token);
+
+        return $this->createOrderFromData($payload);
+    }
+
+    private function createOrderFromData(array $data): RedirectResponse
+    {
+        DB::beginTransaction();
+        try {
+            $order = Order::create([
+                'date' => now(),
+                'nif' => $data['nif'],
+                'address' => $data['address'],
+                'payment_type' => $data['payment_type'],
+                'payment_ref' => $data['payment_ref'],
+                'total_price' => array_sum(array_column($data['cart'], 'sub_total')),
+                'notes' => $data['notes'],
+                'customer_id' => $data['customer_id'],
                 'status' => 'pending',
             ]);
 
-            foreach ($cart as $item) {
+            foreach ($data['cart'] as $item) {
                 $order->order_items()->create([
                     'tshirt_image_id' => $item['tshirt_image_id'],
                     'color_code' => $item['color'],
@@ -128,7 +185,9 @@ class CartController extends Controller
 
             DB::commit();
 
-            Mail::to(auth()->user()->email)->send(new OrderPending($order));
+            // Notify user about order status
+            $userEmail = \App\Models\User::find($data['customer_id'])->email;
+            Mail::to($userEmail)->send(new OrderPending($order));
 
             session()->forget('cart');
             return redirect()->route('orders.show', $order)
@@ -136,7 +195,7 @@ class CartController extends Controller
                 ->with('alert-msg', 'Order placed successfully!');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()
+            return redirect()->route('cart.show')
                 ->with('alert-type', 'danger')
                 ->with('alert-msg', 'An error occurred while placing your order. Please try again.');
         }

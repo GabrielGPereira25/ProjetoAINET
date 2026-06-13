@@ -28,12 +28,21 @@ class CartConfirmationFormRequest extends FormRequest
             'notes' => 'nullable|string|max:1000',
         ];
         if ($this->payment_type === 'MB WAY') {
-            $rules['payment_ref'] = 'required|digits:9';
+            $rules['payment_ref'] = ['required', 'regex:/^9[0-9]{8}$/'];
         }elseif ($this->payment_type === 'Visa') {
-            $rules['payment_ref'] = 'required|digits:16';
+            $rules['payment_ref'] = ['required', 'regex:/^4[0-9]{15}$/'];
         }elseif ($this->payment_type === 'PayPal') {
             $rules['payment_ref'] = 'required|email';
         }
         return $rules;
+    }
+
+    protected function prepareForValidation()
+    {
+        if ($this->has('payment_ref') && in_array($this->payment_type, ['Visa', 'MB WAY'])) {
+            $this->merge([
+                'payment_ref' => str_replace(' ', '', $this->payment_ref),
+            ]);
+        }
     }
 }

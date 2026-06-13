@@ -1,7 +1,7 @@
 <x-layouts::main-content :title="__('Category')"
                         heading="List of categories"
                         subheading="Manage the categories offered by the institution">
-  <div class="flex h-full w-full flex-1 flex-col gap-4 rounded-xl ">
+  <div class="flex w-full flex-1 flex-col gap-4 rounded-xl ">
     <div class="flex justify-start ">
       <div class="my-4 p-6 ">
         <div class="flex items-center gap-4 mb-4">

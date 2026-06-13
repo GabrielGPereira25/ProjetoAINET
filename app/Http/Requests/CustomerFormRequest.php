@@ -29,7 +29,20 @@ class CustomerFormRequest extends FormRequest
             'nif' => 'nullable|string|size:9',
             'address' => 'nullable|string',
             'default_payment_type' => 'nullable|in:Visa,PayPal,MB WAY',
-            'default_payment_ref' => 'nullable|string|max:255',
+            'default_payment_ref' => [
+                'nullable',
+                'string',
+                function ($attribute, $value, $fail) {
+                    $type = $this->default_payment_type;
+                    if ($type === 'MB WAY' && !preg_match('/^9[0-9]{8}$/', str_replace(' ', '', $value))) {
+                        $fail('O número MB WAY deve começar por 9 e ter 9 dígitos.');
+                    } elseif ($type === 'Visa' && !preg_match('/^4[0-9]{15}$/', str_replace(' ', '', $value))) {
+                        $fail('O cartão Visa deve começar por 4 e ter 16 dígitos.');
+                    } elseif ($type === 'PayPal' && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
+                        $fail('O e-mail PayPal não é válido.');
+                    }
+                },
+            ],
             'image_file' => 'nullable|image|max:4096',
         ];
 
@@ -38,5 +51,14 @@ class CustomerFormRequest extends FormRequest
         }
 
         return $rules;
+    }
+
+    protected function prepareForValidation()
+    {
+        if ($this->has('default_payment_ref') && in_array($this->default_payment_type, ['Visa', 'MB WAY'])) {
+            $this->merge([
+                'default_payment_ref' => str_replace(' ', '', $this->default_payment_ref),
+            ]);
+        }
     }
 }

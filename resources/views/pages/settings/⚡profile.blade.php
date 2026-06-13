@@ -17,7 +17,9 @@ new #[Title('Profile settings')] class extends Component {
     public string $nif = '';
     public string $address = '';
     public string $default_payment_type = '';
-    public string $default_payment_ref = '';
+    public string $visa_ref = '';
+    public string $paypal_ref = '';
+    public string $mbway_ref = '';
 
     /**
      * Mount the component.
@@ -31,7 +33,10 @@ new #[Title('Profile settings')] class extends Component {
             $this->nif = Auth::user()->customer->nif ?? '';
             $this->address = Auth::user()->customer->address ?? '';
             $this->default_payment_type = Auth::user()->customer->default_payment_type ?? '';
-            $this->default_payment_ref = Auth::user()->customer->default_payment_ref ?? '';
+            $custom = Auth::user()->customer->custom ?? [];
+            $this->visa_ref = $custom['visa_ref'] ?? '';
+            $this->paypal_ref = $custom['paypal_ref'] ?? '';
+            $this->mbway_ref = $custom['mbway_ref'] ?? '';
         }
     }
 
@@ -47,9 +52,20 @@ new #[Title('Profile settings')] class extends Component {
             'nif' => ['nullable', 'string', 'regex:/^[0-9]{9}$/'],
             'address' => ['nullable', 'string', 'max:255'],
             'default_payment_type' => ['nullable', 'in:Visa,PayPal,MB WAY'],
-            'default_payment_ref' => ['nullable', 'string', 'max:255'],
+            'visa_ref' => ['nullable', 'string', function ($attribute, $value, $fail) {
+                if ($value && !preg_match('/^4[0-9]{15}$/', str_replace(' ', '', $value))) {
+                    $fail('O cartão Visa deve começar por 4 e ter 16 dígitos.');
+                }
+            }],
+            'paypal_ref' => ['nullable', 'email'],
+            'mbway_ref' => ['nullable', 'string', function ($attribute, $value, $fail) {
+                if ($value && !preg_match('/^9[0-9]{8}$/', str_replace(' ', '', $value))) {
+                    $fail('O número MB WAY deve começar por 9 e ter 9 dígitos.');
+                }
+            }],
         ], [
             'nif.regex' => 'O NIF deve conter exatamente 9 dígitos numéricos.',
+            'paypal_ref.email' => 'O e-mail PayPal não é válido.',
         ]);
 
         $user->fill([
@@ -65,11 +81,16 @@ new #[Title('Profile settings')] class extends Component {
         $user->save();
 
         if ($user->user_type === 'C' && $user->customer) {
+            $custom = $user->customer->custom ?? [];
+            if (isset($validated['visa_ref'])) $custom['visa_ref'] = str_replace(' ', '', $validated['visa_ref']);
+            if (isset($validated['paypal_ref'])) $custom['paypal_ref'] = $validated['paypal_ref'];
+            if (isset($validated['mbway_ref'])) $custom['mbway_ref'] = str_replace(' ', '', $validated['mbway_ref']);
+
             $user->customer->update([
                 'nif' => $validated['nif'] ?? null,
                 'address' => $validated['address'] ?? null,
                 'default_payment_type' => $validated['default_payment_type'] ?? null,
-                'default_payment_ref' => $validated['default_payment_ref'] ?? null,
+                'custom' => empty($custom) ? null : $custom,
             ]);
         }
 
@@ -147,11 +168,33 @@ new #[Title('Profile settings')] class extends Component {
 
                 <div x-data="{ 
                         paymentType: $wire.entangle('default_payment_type', true),
-                        useAccountEmail: $wire.default_payment_type === 'PayPal' && $wire.default_payment_ref === $wire.email
+                        useAccountEmail: $wire.default_payment_type === 'PayPal' && $wire.paypal_ref === $wire.email,
+                        
+                        formatVisa(el) {
+                            let val = el.value.replace(/\D/g, '');
+                            el.value = val.replace(/(\d{4})(?=\d)/g, '$1 ');
+                            $wire.visa_ref = el.value;
+                        },
+                        formatMbway(el) {
+                            let val = el.value.replace(/\D/g, '');
+                            el.value = val.replace(/(\d{3})(?=\d)/g, '$1 ');
+                            $wire.mbway_ref = el.value;
+                        }
                      }" 
-                     x-init="$watch('paymentType', val => { if(val === 'PayPal') { useAccountEmail = true; $wire.default_payment_ref = $wire.email; } else { useAccountEmail = false; } });
-                             $watch('$wire.email', val => { if(paymentType === 'PayPal' && useAccountEmail) $wire.default_payment_ref = val; });
-                             $watch('useAccountEmail', val => { if(val && paymentType === 'PayPal') $wire.default_payment_ref = $wire.email; else if (paymentType === 'PayPal') $wire.default_payment_ref = ''; });"
+                     x-init="$watch('paymentType', val => { if(val === 'PayPal' && !$wire.paypal_ref) { useAccountEmail = true; $wire.paypal_ref = $wire.email; } });
+                             $watch('$wire.email', val => { if(paymentType === 'PayPal' && useAccountEmail) $wire.paypal_ref = val; });
+                             $watch('useAccountEmail', val => { if(val) $wire.paypal_ref = $wire.email; else $wire.paypal_ref = ''; });
+                             
+                             // Initial formatting
+                             if ($wire.visa_ref) {
+                                 let val = $wire.visa_ref.replace(/\D/g, '');
+                                 $wire.visa_ref = val.replace(/(\d{4})(?=\d)/g, '$1 ');
+                             }
+                             if ($wire.mbway_ref) {
+                                 let val = $wire.mbway_ref.replace(/\D/g, '');
+                                 $wire.mbway_ref = val.replace(/(\d{3})(?=\d)/g, '$1 ');
+                             }
+                             "
                      class="flex flex-col gap-6">
                     <flux:select wire:model="default_payment_type" :label="__('Default Payment Type (Optional)')" x-model="paymentType">
                         <option value="">{{ __('None') }}</option>
@@ -160,22 +203,43 @@ new #[Title('Profile settings')] class extends Component {
                         <option value="MB WAY">MB WAY</option>
                     </flux:select>
 
-                    <div x-show="paymentType !== ''" x-transition x-cloak>
+                    <div class="space-y-4">
                         <flux:input
-                            wire:model="default_payment_ref"
-                            :label="__('Default Payment Reference')"
+                            wire:model="visa_ref"
+                            :label="__('Visa Card Number')"
                             type="text"
-                            x-bind:placeholder="paymentType === 'Visa' ? 'Card Number (16 digits)' : (paymentType === 'PayPal' ? 'PayPal Email' : 'MB WAY Phone Number')"
-                            x-bind:readonly="paymentType === 'PayPal' && useAccountEmail"
-                            x-bind:class="paymentType === 'PayPal' && useAccountEmail ? 'opacity-60 cursor-not-allowed pointer-events-none bg-gray-100 dark:bg-zinc-800' : ''"
+                            placeholder="4000 0000 0000 0000"
+                            pattern="^4[0-9]{3}( [0-9]{4}){3}$|^4[0-9]{15}$"
+                            title="O cartão Visa deve começar por 4 e ter 16 dígitos."
+                            x-on:input="formatVisa($event.target)"
                         />
 
-                        <!-- Checkbox for PayPal -->
-                        <div x-show="paymentType === 'PayPal'" class="mt-2">
-                            <flux:checkbox
-                                label="{{ __('Use my account email') }}"
-                                x-model="useAccountEmail"
+                        <flux:input
+                            wire:model="mbway_ref"
+                            :label="__('MB WAY Phone Number')"
+                            type="text"
+                            placeholder="900 000 000"
+                            pattern="^9[0-9]{2}( [0-9]{3}){2}$|^9[0-9]{8}$"
+                            title="O número MB WAY deve começar por 9 e ter 9 dígitos."
+                            x-on:input="formatMbway($event.target)"
+                        />
+
+                        <div>
+                            <flux:input
+                                wire:model="paypal_ref"
+                                :label="__('PayPal Email Address')"
+                                type="email"
+                                placeholder="example@email.com"
+                                x-bind:readonly="useAccountEmail"
+                                x-bind:class="useAccountEmail ? 'opacity-60 cursor-not-allowed pointer-events-none bg-gray-100 dark:bg-zinc-800' : ''"
                             />
+                            
+                            <div class="mt-2">
+                                <flux:checkbox
+                                    label="{{ __('Use my account email') }}"
+                                    x-model="useAccountEmail"
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>

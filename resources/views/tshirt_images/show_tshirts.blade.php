@@ -5,7 +5,32 @@
                 <div class="my-4 font-base text-sm text-gray-700 dark:text-gray-300 w-full">
                     <div>
                         <div class="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
-                                <h2 class="text-2xl font-bold tracking-tight">Choose an image</h2>
+                            <div class="flex flex-col md:flex-row md:items-end justify-between w-full gap-4 mb-8">
+                                <h2 class="text-2xl font-bold tracking-tight mb-4 md:mb-0">Choose an image</h2>
+                                
+                                <form method="GET" action="{{ route('home') }}" class="flex flex-col sm:flex-row items-end gap-4">
+                                    <div class="w-full sm:w-48">
+                                        <flux:input name="name" :label="__('Name')" type="text" placeholder="Search by name..." value="{{ $filterByName }}" />
+                                    </div>
+                                    <div class="w-full sm:w-48">
+                                        <flux:input name="description" :label="__('Description')" type="text" placeholder="Search by description..." value="{{ $filterByDescription }}" />
+                                    </div>
+                                    <div class="w-full sm:w-48">
+                                        <flux:select name="category_id" :label="__('Category')">
+                                            <option value="">{{ __('All Categories') }}</option>
+                                            @foreach($categories as $category)
+                                                <option value="{{ $category->id }}" {{ $filterByCategory == $category->id ? 'selected' : '' }}>
+                                                    {{ $category->name }}
+                                                </option>
+                                            @endforeach
+                                        </flux:select>
+                                    </div>
+                                    <div class="flex gap-2 w-full sm:w-auto">
+                                        <flux:button type="submit" variant="primary">{{ __('Filter') }}</flux:button>
+                                        <flux:button href="{{ route('home') }}">{{ __('Clear') }}</flux:button>
+                                    </div>
+                                </form>
+                            </div>
 
                             <div class="mt-6 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
                                 @foreach ($tshirt_images as $tshirt_image)
