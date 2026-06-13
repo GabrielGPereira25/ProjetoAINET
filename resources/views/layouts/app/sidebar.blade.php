@@ -54,21 +54,31 @@
             <flux:spacer />
 
             @auth
-                <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
+                <x-desktop-user-menu 
+                    class="hidden lg:block" 
+                    :name="auth()->user()->name" 
+                    :avatar="auth()->user()->photo_url ? asset('storage/photos/' . auth()->user()->photo_url) : null" 
+                />
             @else
-                <flux:sidebar.item icon="user" :href="route('login')" :current="request()->routeIs('login')" wire:navigate>
-                    Login
+                
+                <flux:sidebar.item :href="route('login')" :current="request()->routeIs('login')" wire:navigate>
+                    <div class="flex items-center gap-3">
+                        <img src="{{ asset('storage/photos/anonymous.png') }}" class="h-6 w-6 rounded-full object-cover border border-zinc-300 dark:border-zinc-600" alt="Visitante">
+                        <span>Login</span>
+                    </div>
                 </flux:sidebar.item>
             @endauth
         </flux:sidebar>
 
         @auth
-            <!-- Mobile User Menu -->
             <flux:header class="lg:hidden">
                 <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
                 <flux:spacer />
                 <flux:dropdown position="top" align="end">
+                
+                
                 <flux:profile
+                    :avatar="auth()->user()->photo_url ? asset('storage/photos/' . auth()->user()->photo_url) : null"
                     :initials="auth()->user()->initials()"
                     icon-trailing="chevron-down"
                 />
@@ -77,7 +87,10 @@
                     <flux:menu.radio.group>
                         <div class="p-0 text-sm font-normal">
                             <div class="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
+                                
+                                
                                 <flux:avatar
+                                    :src="auth()->user()->photo_url ? asset('storage/photos/' . auth()->user()->photo_url) : null"
                                     :name="auth()->user()->name"
                                     :initials="auth()->user()->initials()"
                                 />
@@ -116,12 +129,14 @@
                 </flux:dropdown>
             </flux:header>
         @else
-            <!-- Mobile Menu Login-->
             <flux:header class="lg:hidden">
                 <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
                 <flux:spacer />
-                <flux:sidebar.item position="top" align="end" icon="user" :href="route('login')" :current="request()->routeIs('login')" wire:navigate>
-                    Login
+                <flux:sidebar.item position="top" align="end" :href="route('login')" :current="request()->routeIs('login')" wire:navigate>
+                    <div class="flex items-center gap-2">
+                        <span>Login</span>
+                        <img src="{{ asset('storage/photos/anonymous.png') }}" class="h-6 w-6 rounded-full object-cover border border-zinc-300 dark:border-zinc-600" alt="Visitante">
+                    </div>
                 </flux:sidebar.item>
             </flux:header>
         @endauth

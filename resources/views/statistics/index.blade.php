@@ -183,7 +183,7 @@
       </div>
 
       {{-- Bar Chart --}}
-      <div class="mt-4 flex h-[200px] items-end gap-2">
+      <div class="mt-4 flex h-50 items-end gap-2">
         @php
           $monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         @endphp

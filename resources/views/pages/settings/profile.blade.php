@@ -7,10 +7,14 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 new #[Title('Profile settings')] class extends Component {
     use ProfileValidationRules;
-
+    use WithFileUploads;
+    use \App\Traits\UserPhotoFileStorage;
+    
+    public $photo;
     public string $name = '';
     public string $email = '';
     public string $gender = '';
@@ -21,9 +25,6 @@ new #[Title('Profile settings')] class extends Component {
     public string $paypal_ref = '';
     public string $mbway_ref = '';
 
-    /**
-     * Mount the component.
-     */
     public function mount(): void
     {
         $this->name = Auth::user()->name;
@@ -40,15 +41,13 @@ new #[Title('Profile settings')] class extends Component {
         }
     }
 
-    /**
-     * Update the profile information for the currently authenticated user.
-     */
     public function updateProfileInformation(): void
     {
         $user = Auth::user();
 
         $validated = $this->validate([
             ...$this->profileRules($user->id),
+            'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'nif' => ['nullable', 'string', 'regex:/^[0-9]{9}$/'],
             'address' => ['nullable', 'string', 'max:255'],
             'default_payment_type' => ['nullable', 'in:Visa,PayPal,MB WAY'],
@@ -80,6 +79,11 @@ new #[Title('Profile settings')] class extends Component {
 
         $user->save();
 
+        if ($this->photo) {
+            $this->deleteUserPhoto($user);
+            $this->storeUserPhoto($this->photo, $user);
+        } // ESTA CHAVETA FALTAVA NO TEU CÓDIGO
+
         if ($user->user_type === 'C' && $user->customer) {
             $custom = $user->customer->custom ?? [];
             if (isset($validated['visa_ref'])) $custom['visa_ref'] = str_replace(' ', '', $validated['visa_ref']);
@@ -97,16 +101,12 @@ new #[Title('Profile settings')] class extends Component {
         Flux::toast(variant: 'success', text: __('Profile updated.'));
     }
 
-    /**
-     * Send an email verification notification to the current user.
-     */
     public function resendVerificationNotification(): void
     {
         $user = Auth::user();
 
         if ($user->hasVerifiedEmail()) {
             $this->redirectIntended(default: route('home', absolute: false));
-
             return;
         }
 
@@ -136,6 +136,29 @@ new #[Title('Profile settings')] class extends Component {
 
     <x-pages::settings.layout :heading="__('Profile')" :subheading="__('Update your name and email address')">
         <form wire:submit="updateProfileInformation" class="my-6 w-full space-y-6">
+            <div class="flex items-center gap-6">
+                <div class="shrink-0 relative">
+                    @if ($photo)
+                        <img class="h-16 w-16 object-cover rounded-full border border-zinc-600" src="{{ $photo->temporaryUrl() }}" alt="Preview">
+                    @elseif (Auth::user()->photo_url)
+                        <img class="h-16 w-16 object-cover rounded-full border border-zinc-600" src="{{ asset('storage/photos/' . Auth::user()->photo_url) }}" alt="Avatar">
+                    @else
+                        <div class="flex h-16 w-16 items-center justify-center rounded-full bg-zinc-800 border border-zinc-700 text-zinc-400">
+                            <svg class="size-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                            </svg>
+                        </div>
+                    @endif
+                </div>
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-zinc-300 mb-1">Profile Photo</label>
+                    <input type="file" wire:model="photo" accept="image/*" class="block w-full text-sm text-zinc-400 file:mr-4 file:rounded-full file:border-0 file:bg-zinc-700 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-zinc-600" />
+                    
+                    <div wire:loading wire:target="photo" class="text-xs text-zinc-400 mt-1">A carregar preview...</div>
+                    
+                    @error('photo') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                </div>
+            </div>
             <flux:input wire:model="name" :label="__('Name')" type="text" required autofocus autocomplete="name" />
 
             <div>
@@ -150,7 +173,6 @@ new #[Title('Profile settings')] class extends Component {
                                 {{ __('Click here to re-send the verification email.') }}
                             </flux:link>
                         </flux:text>
-
                     </div>
                 @endif
             </div>
@@ -185,7 +207,6 @@ new #[Title('Profile settings')] class extends Component {
                              $watch('$wire.email', val => { if(paymentType === 'PayPal' && useAccountEmail) $wire.paypal_ref = val; });
                              $watch('useAccountEmail', val => { if(val) $wire.paypal_ref = $wire.email; else $wire.paypal_ref = ''; });
                              
-                             // Initial formatting
                              if ($wire.visa_ref) {
                                  let val = $wire.visa_ref.replace(/\D/g, '');
                                  $wire.visa_ref = val.replace(/(\d{4})(?=\d)/g, '$1 ');
@@ -256,4 +277,4 @@ new #[Title('Profile settings')] class extends Component {
             <livewire:pages::settings.delete-user-form />
         @endif
     </x-pages::settings.layout>
-</section>
+</section>  
