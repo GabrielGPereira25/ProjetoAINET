@@ -33,6 +33,14 @@
                         {{ __('Statistics') }}
                     </flux:sidebar.item>
                     @endcan
+                    @can('customer')
+                    <flux:sidebar.item icon="photo" :href="route('tshirt_images.index')" :current="request()->routeIs('tshirt_images.*')" wire:navigate>
+                        {{ __('Custom Images') }}
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="document-text" :href="route('orders.index')" :current="request()->routeIs('orders.*')" wire:navigate>
+                        {{ __('My Orders') }}
+                    </flux:sidebar.item>
+                    @endcan
                 </flux:sidebar.group>
             </flux:sidebar.nav>
             @can('admin')

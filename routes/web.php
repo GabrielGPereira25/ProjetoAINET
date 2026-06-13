@@ -7,6 +7,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PriceController;
 use App\Http\Controllers\StatisticsController;
 use App\Http\Controllers\TshirtImageController;
+use App\Http\Controllers\UserController;
 use App\Models\Order;
 use Illuminate\Support\Facades\Route;
 
@@ -21,7 +22,11 @@ Route::middleware(['auth', 'verified', 'notBlocked'])->group(function () {
         Route::get('prices', [PriceController::class, 'edit'])->name('prices.edit');
         Route::put('prices', [PriceController::class, 'update'])->name('prices.update');
         Route::get('statistics', [StatisticsController::class, 'index'])->name('statistics.index');
+        Route::resource('users', UserController::class);
+        Route::patch('users/{user}/block', [UserController::class, 'block_unblock'])->name('users.block_unblock');
+        Route::delete('users/{user}/photo', [UserController::class, 'destroyPhoto'])->name('users.photo.destroy');
     });
+    Route::resource('tshirt_images', TshirtImageController::class);
     Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
 

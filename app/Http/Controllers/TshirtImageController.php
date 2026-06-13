@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Tshirt_imageFormRequest;
 use App\Models\Color;
 use App\Models\Price;
 use App\Models\Tshirt_image;
 use App\Models\Category;
 use App\Models\Customer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class TshirtImageController extends Controller
 {
@@ -20,6 +22,12 @@ class TshirtImageController extends Controller
         $filterByDescription = $request->query('description');
 
         $tshirtImagesQuery = Tshirt_image::query()->with(['category', 'customer']);
+
+        if (auth()->user()->user_type === 'C') {
+            $tshirtImagesQuery->where('customer_id', auth()->id());
+        } else {
+            $tshirtImagesQuery->whereNull('customer_id');
+        }
 
         if ($filterByCategory) {
             $tshirtImagesQuery->where('category_id', $filterByCategory);
@@ -45,26 +53,30 @@ class TshirtImageController extends Controller
         return view('tshirt_images.create', compact('tshirt_image', 'categories', 'customers'));
     }
 
-    public function store(Request $request)
+    public function store(Tshirt_imageFormRequest $request)
     {
-        $validated = $request->validate([
-            'customer_id' => 'nullable|exists:customers,id',
-            'category_id' => 'nullable|exists:categories,id',
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'image_file' => 'required|image|max:4096',
-        ]);
+        $validated = $request->validated();
+        
+        $customer_id = null;
+        $category_id = null;
+        
+        if (auth()->user()->user_type === 'C') {
+            $customer_id = auth()->id();
+        } else {
+            $customer_id = $request->input('customer_id');
+            $category_id = $request->input('category_id');
+        }
 
         $newTshirtImage = Tshirt_image::create([
-            'customer_id' => $validated['customer_id'] ?? null,
-            'category_id' => $validated['category_id'] ?? null,
+            'customer_id' => $customer_id,
+            'category_id' => $category_id,
             'name' => $validated['name'],
             'description' => $validated['description'] ?? null,
             'image_url' => '',
         ]);
 
-        if ($request->image_file) {
-            $this->storeTshirtImage($request->image_file, $newTshirtImage);
+        if ($request->hasFile('image_file')) {
+            $this->storeTshirtImage($request->file('image_file'), $newTshirtImage);
         }
 
         $url = route('tshirt_images.show', ['tshirt_image' => $newTshirtImage]);
@@ -77,37 +89,44 @@ class TshirtImageController extends Controller
 
     public function show(Tshirt_image $tshirt_image)
     {
+        if ($tshirt_image->customer_id != null && auth()->user()->user_type === 'C' && $tshirt_image->customer_id != auth()->id()) {
+            abort(403);
+        }
         $tshirt_image->load(['category', 'customer.user']);
         return view('tshirt_images.show', compact('tshirt_image'));
     }
 
     public function edit(Tshirt_image $tshirt_image)
     {
+        if (auth()->user()->user_type === 'C' && $tshirt_image->customer_id != auth()->id()) abort(403);
+        if (auth()->user()->user_type !== 'C' && $tshirt_image->customer_id != null) abort(403);
+
         $categories = Category::all();
         $customers = Customer::with('user')->get();
         return view('tshirt_images.edit', compact('tshirt_image', 'categories', 'customers'));
     }
 
-    public function update(Request $request, Tshirt_image $tshirt_image)
+    public function update(Tshirt_imageFormRequest $request, Tshirt_image $tshirt_image)
     {
-        $validated = $request->validate([
-            'customer_id' => 'nullable|exists:customers,id',
-            'category_id' => 'nullable|exists:categories,id',
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'image_file' => 'nullable|image|max:4096',
-        ]);
+        if (auth()->user()->user_type === 'C' && $tshirt_image->customer_id != auth()->id()) abort(403);
+        if (auth()->user()->user_type !== 'C' && $tshirt_image->customer_id != null) abort(403);
+
+        $validated = $request->validated();
+
+        $category_id = $tshirt_image->category_id;
+        if (auth()->user()->user_type !== 'C') {
+            $category_id = $request->input('category_id');
+        }
 
         $tshirt_image->update([
-            'customer_id' => $validated['customer_id'] ?? null,
-            'category_id' => $validated['category_id'] ?? null,
+            'category_id' => $category_id,
             'name' => $validated['name'],
             'description' => $validated['description'] ?? null,
         ]);
 
-        if ($request->image_file) {
+        if ($request->hasFile('image_file')) {
             $this->deleteTshirtImage($tshirt_image);
-            $this->storeTshirtImage($request->image_file, $tshirt_image);
+            $this->storeTshirtImage($request->file('image_file'), $tshirt_image);
         }
 
         $url = route('tshirt_images.show', ['tshirt_image' => $tshirt_image]);
@@ -120,6 +139,9 @@ class TshirtImageController extends Controller
 
     public function destroy(Tshirt_image $tshirt_image)
     {
+        if (auth()->user()->user_type === 'C' && $tshirt_image->customer_id != auth()->id()) abort(403);
+        if (auth()->user()->user_type !== 'C' && $tshirt_image->customer_id != null) abort(403);
+
         $id = $tshirt_image->id;
         $name = $tshirt_image->name;
         
